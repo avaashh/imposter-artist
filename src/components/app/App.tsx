@@ -7,7 +7,12 @@ import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "../../utils/storage/store";
 
 import * as storage from "../../utils/storage/storage-container";
-import { newPlayerId, newPlayerName } from "../../utils/defaultCreate";
+import {
+  newBackGroundColor,
+  newCharacterId,
+  newPlayerId,
+  newPlayerName,
+} from "../../utils/defaultCreate";
 
 import { Outlet } from "react-router-dom";
 
@@ -18,6 +23,7 @@ const App = () => {
     const load = async () => {
       if (storage.ThisPlayer() === undefined || storage.ThisPlayer() === null) {
         storage.StorePlayer(newPlayerId(), newPlayerName());
+        storage.ChangeCharacter(newCharacterId(), newBackGroundColor());
       }
       storage.CheckState();
     };

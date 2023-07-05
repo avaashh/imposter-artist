@@ -1,4 +1,4 @@
-import { Player } from "../../types/User";
+import { Character, Player } from "../../types/User";
 import * as actionTypes from "./redux-actions";
 
 /*
@@ -13,28 +13,31 @@ import * as actionTypes from "./redux-actions";
     }
 */
 
-interface ReduxState {
+export interface ReduxState {
   player?: Player | null;
 }
 
-interface ReduxAction {
+export interface ReduxAction {
   type: string;
   payload?: any;
 }
 
 const reducer = (state: ReduxState = {}, action: ReduxAction): ReduxState => {
   switch (action.type) {
-    case actionTypes.createPlayer:
-      if (state.player !== null)
+    case actionTypes.updatePlayer:
+      return {
+        ...state,
+        player: action.payload,
+      };
+
+    case actionTypes.changeUserCharacter:
+      if (state.player !== undefined && state.player !== null) {
         return {
           ...state,
-          player: state.player ? { ...state.player } : null,
+          player: { ...state.player, character: action.payload },
         };
-      else
-        return {
-          ...state,
-          player: action.payload,
-        };
+      }
+      return state;
     default:
       return state;
   }

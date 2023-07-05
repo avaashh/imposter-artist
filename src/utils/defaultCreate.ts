@@ -4,6 +4,12 @@ import { GameRoom, GameRoomSettings } from "../types/Room";
 
 import playerNameBase from "../assets/dist/playerNames.json";
 
+import {
+  CharactersLen,
+  BackGroundColors,
+  BackGroundColorsLen,
+} from "../assets/Characters";
+
 // Identifiers
 import { v4 as uuidv4 } from "uuid";
 
@@ -21,8 +27,8 @@ export const defaultPlayer = ({
 });
 
 export const defaultCharacter = (
-  characterIdentity: string = "artist",
-  characterColor: string = "yellow"
+  characterIdentity: string = "0",
+  characterColor: string = "#FFFFFF"
 ): Character => ({
   characterIdentity: characterIdentity,
   characterColor: characterColor,
@@ -88,3 +94,11 @@ export const newRoomId = () => `room${randomAlphaNumericCode(8)}`;
 /* 8 Character Pseudo-random Room ID */
 export const newPlayerName = (): string =>
   playerNameBase.names[Math.floor(Math.random() * playerNameBase.names.length)];
+
+/* Character's Pseudo-random ID */
+export const newCharacterId = () =>
+  `${Math.floor(Math.random() * CharactersLen)}`;
+
+/* Character's BackGroundColor in Hex */
+export const newBackGroundColor = () =>
+  BackGroundColors[Math.floor(Math.random() * BackGroundColorsLen)];

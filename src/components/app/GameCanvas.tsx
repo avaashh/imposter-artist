@@ -68,9 +68,9 @@ const GameCanvas: React.FC<GameCanvasProps> = () => {
       {/* Timer component */}
       <Timer
         isPlaying={startedDrawing && canvasEnabled}
-        duration={3}
+        duration={2}
         colors={["#27AE60", "#D4AC0D", "#DC7633", "#C0392B"]}
-        colorsTime={[3, 2, 1, 0]}
+        colorsTime={[0.75, 0.5, 0.25, 0]}
         OnComplete={handleTimerComplete}
       />
     </div>

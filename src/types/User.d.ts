@@ -10,6 +10,6 @@ export interface Player {
 
 // Interface representing a Character
 export interface Character {
-  characterIdentity: string; // Identity of the character
+  characterIdentity: string; // Identity of the character's svg
   characterColor: string; // Color of the character (in hex format)
 }

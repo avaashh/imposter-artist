@@ -1,4 +1,6 @@
 //
 
-export const createPlayer = "createPlayer";
-export const usernameChanged = "playerUsernameChanged";
+export const updatePlayer = "updatePlayer";
+export const playerUsernameChanged = "playerUsernameChanged";
+
+export const changeUserCharacter = "changeUserCharacter";
