@@ -1,0 +1,23 @@
+.default-input {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.default-input-label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.default-input-field {
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #f1f1f1;
+  transition: background-color 0.3s;
+}
+
+.default-input-field:focus {
+  background-color: #e1e1e1;
+}
