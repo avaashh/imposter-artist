@@ -48,5 +48,3 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 # imposter-artist
 
 Imposter Artist: The ultimate web app for playing the creative deception game with friends or strangers, anytime, anywhere!
-
-> > > > > > > 6315701333af6525516bad1503bb7cb5552b354d

@@ -1,0 +1,11 @@
+.container {
+  display: flex;
+  flex-direction: row;
+}
+
+.canvas {
+  border: 0.0625rem solid #9c9c9c;
+  border-radius: 0.25rem;
+  width: 90vh;
+  height: 90vh;
+}
