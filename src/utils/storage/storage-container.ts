@@ -23,6 +23,12 @@ export const ChangeCharacter = (
     payload: defaultCharacter(characterIdentity, characterColor),
   });
 
+export const UpdateName = (newName: string) =>
+  store.dispatch({
+    type: actionTypes.playerUsernameChanged,
+    payload: { playerName: newName },
+  });
+
 export const ThisPlayer = () => store.getState().player;
 
 export const CheckState = () => console.log(store.getState());

@@ -26,7 +26,6 @@ const PromptPlayer = () => {
 };
 
 const HomeScreen = () => {
-  console.log("Home Screen Render");
   return (
     <div
       className="appBackground"
@@ -50,9 +49,12 @@ const HomeScreen = () => {
         <PromptPlayer />
       </section>
 
-      <Link to="/play/MEM">Play</Link>
-      <div>{"\n\n"}</div>
-      <Link to="/lobby/MEM">Lobby</Link>
+      <section className="centered-component">
+        <div className="bottom-container">
+          <Link to="/play/MEM">How to Play</Link>
+          <Link to="/lobby/MEM">Privacy Policy</Link>
+        </div>
+      </section>
     </div>
   );
 };

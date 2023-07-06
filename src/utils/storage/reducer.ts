@@ -6,7 +6,7 @@ import * as actionTypes from "./redux-actions";
         // User Details
         player: {
             id: string; // Unique ID of the Player
-            name: string; // Name of the Player
+            playerName: string; // Name of the Player
             character: Character; // Player's default character
             currentRoom?: GameRoom | null; // Current room player is playing in - can be null when not playing
         }
@@ -38,6 +38,16 @@ const reducer = (state: ReduxState = {}, action: ReduxAction): ReduxState => {
         };
       }
       return state;
+
+    case actionTypes.playerUsernameChanged:
+      if (state.player !== undefined && state.player !== null) {
+        return {
+          ...state,
+          player: { ...state.player, playerName: action.payload.playerName },
+        };
+      }
+      return state;
+
     default:
       return state;
   }

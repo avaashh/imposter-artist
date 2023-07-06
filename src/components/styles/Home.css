@@ -57,8 +57,8 @@ body {
 .promptContainer {
   background-color: #d0b9f5c0;
   border-radius: 5px;
-  width: 500px;
-  height: 450px;
+  width: 400px;
+  height: 400px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -77,6 +77,12 @@ body {
   position: relative;
 }
 
+.centered-component {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .refreshCharacter {
   max-width: 35px;
   max-height: 35px;
@@ -92,8 +98,15 @@ body {
   max-height: 40px;
 }
 
+.bottom-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  width: 400px;
+}
+
 /* Styles for mobile screens */
-@media (max-width: 767px) {
+@media (max-width: 500px) {
   .appLogo {
     max-width: 75px;
     max-height: 75px;
@@ -113,9 +126,8 @@ body {
 
   .characterContainer {
     width: 95%;
-    max-width: 300px;
     height: auto;
-    aspect-ratio: unset;
+    aspect-ratio: 1;
   }
 
   .refreshCharacter {
@@ -123,6 +135,10 @@ body {
     max-height: 25px;
     top: 5px;
     right: 5px;
+  }
+
+  .bottom-container {
+    width: 98%;
   }
 }
 

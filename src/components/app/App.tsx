@@ -25,7 +25,6 @@ const App = () => {
         storage.StorePlayer(newPlayerId(), newPlayerName());
         storage.ChangeCharacter(newCharacterId(), newBackGroundColor());
       }
-      storage.CheckState();
     };
 
     load().then(() => setLoadComplete(true));

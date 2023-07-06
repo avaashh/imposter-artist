@@ -3,13 +3,17 @@ import "./styles/Inputs.css";
 
 type DefaultInputProps = {
   label: string;
+  value: string;
+  setValue?: (v: string) => void;
 };
 
-const DefaultInput: React.FC<DefaultInputProps> = ({ label }) => {
-  const [value, setValue] = useState("");
-
+const DefaultInput: React.FC<DefaultInputProps> = ({
+  label,
+  value,
+  setValue,
+}) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
+    if (setValue !== undefined) setValue(event.target.value);
   };
 
   return (

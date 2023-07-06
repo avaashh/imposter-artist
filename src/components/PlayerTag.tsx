@@ -1,7 +1,9 @@
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { ReduxState } from "../utils/storage/reducer";
+
 import DefaultInput from "./Inputs";
+import { UpdateName } from "../utils/storage/storage-container";
 
 interface PlayerTagProps {
   style?: {};
@@ -19,5 +21,15 @@ export default PlayerTag;
 
 export const ChangeablePlayerTag = (props: PlayerTagProps) => {
   const playerData = useSelector((state: ReduxState) => state.player);
-  return <DefaultInput label="Player Tag" />;
+  return (
+    <DefaultInput
+      label="Username"
+      value={
+        playerData !== null && playerData != undefined
+          ? playerData.playerName
+          : ""
+      }
+      setValue={UpdateName}
+    />
+  );
 };
