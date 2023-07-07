@@ -1,11 +1,11 @@
-import { User } from "./User";
+import { Player } from "./User";
 
 // Interface representing a GameRoom
 interface GameRoom {
   roomId: string; // Unique ID of the room
-  roomOwner: User; // User who owns the room
+  roomOwner: Player; // User who owns the room
   settings: GameRoomSettings; // Settings of the game room
-  playersInRoom: User[]; // Array of users currently in the room
+  playersInRoom: Player[]; // Array of users currently in the room
 }
 
 // Interface representing the settings of a GameRoom
