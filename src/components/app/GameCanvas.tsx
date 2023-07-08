@@ -8,7 +8,7 @@ import { ReactSketchCanvas, ReactSketchCanvasRef } from "react-sketch-canvas";
 
 // Defined Types
 import { Stroke } from "../../types/Drawing";
-import postStrokeToServer from "../../utils/postStrokeToServer";
+// import postStrokeToServer from "../../utils/postStrokeToServer";
 
 interface GameCanvasProps {}
 
@@ -58,6 +58,7 @@ const GameCanvas: React.FC<GameCanvasProps> = () => {
       {/* Canvas */}
       <ReactSketchCanvas
         ref={canvas}
+        height={"400"}
         strokeWidth={5}
         className={"canvas"}
         strokeColor="black"

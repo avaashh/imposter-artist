@@ -1,7 +1,7 @@
 .default-button {
   display: inline-block;
   padding: 10px 20px;
-  margin: 5px;
+  margin-top: 5px;
   font-size: 15px;
   font-weight: bold;
   text-align: center;
@@ -17,4 +17,13 @@
 
 .default-button:hover {
   background-color: #0056b3;
+}
+
+.default-button.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.default-button.disabled:hover {
+  background-color: #007bff;
 }

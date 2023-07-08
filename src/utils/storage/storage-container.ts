@@ -3,15 +3,18 @@ import { store } from "./store";
 import * as actionTypes from "./redux-actions";
 
 // Modules
-import { defaultCharacter, defaultPlayer } from "../defaultCreate";
+import {
+  defaultCharacter,
+  defaultPlayer,
+  newPlayerId,
+  newPlayerName,
+} from "../defaultCreate";
+import { Player } from "../../types/User";
 
-export const StorePlayer = (playerID: string, playerName: string) =>
+export const StorePlayer = (player: Player) =>
   store.dispatch({
     type: actionTypes.updatePlayer,
-    payload: defaultPlayer({
-      id: playerID,
-      playerName: playerName,
-    }),
+    payload: player,
   });
 
 export const ChangeCharacter = (
@@ -29,6 +32,11 @@ export const UpdateName = (newName: string) =>
     payload: { playerName: newName },
   });
 
-export const ThisPlayer = () => store.getState().player;
+export const ThisPlayer = () => {
+  const player = store.getState().player;
+  return player === undefined || player === null
+    ? defaultPlayer({ id: newPlayerId(), playerName: newPlayerName() })
+    : player;
+};
 
 export const CheckState = () => console.log(store.getState());

@@ -2,7 +2,6 @@ package dist
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -34,8 +33,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			log.Println("Failed to read message:", err)
 			break
 		}
-
-		fmt.Printf("Received message: %s\n", msg)
 
 		// Unmarshal received JSON data into a map
 		var receivedQuery Request

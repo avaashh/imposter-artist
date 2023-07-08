@@ -105,6 +105,44 @@ body {
   width: 400px;
 }
 
+.largeText {
+  font-family: "Poppins";
+  font-weight: 600;
+  font-size: 19px;
+}
+
+.midText {
+  font-family: "Poppins";
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 2px;
+}
+
+.smallText {
+  font-family: "Poppins";
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 0px;
+}
+
+.centeredText {
+  text-align: center;
+}
+
+.leftText {
+  text-align: left;
+}
+
+.joinRoomAction {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.rightText {
+  text-align: right;
+}
+
 /* Styles for mobile screens */
 @media (max-width: 500px) {
   .appLogo {

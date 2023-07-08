@@ -25,7 +25,7 @@ export const ChangeablePlayerTag = (props: PlayerTagProps) => {
     <DefaultInput
       label="Username"
       value={
-        playerData !== null && playerData != undefined
+        playerData !== null && playerData !== undefined
           ? playerData.playerName
           : ""
       }

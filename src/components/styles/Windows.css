@@ -1,0 +1,62 @@
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 5px;
+  border-radius: 4px;
+  width: 400px;
+  min-height: 35%;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+}
+
+.modal.open {
+  animation: slideUp 0.3s ease;
+}
+
+.modal.close {
+  animation: slideDown 0.3s ease;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  color: grey;
+  background-color: transparent;
+  border: 0px;
+  font-size: large;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translate(-50%, 100%);
+  }
+  to {
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -50%);
+  }
+  to {
+    transform: translate(-50%, 100%);
+  }
+}

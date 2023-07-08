@@ -17,13 +17,11 @@ import { v4 as uuidv4 } from "uuid";
 export const defaultPlayer = ({
   id,
   playerName,
-  character = defaultCharacter(),
-  currentRoom = null,
+  character = defaultCharacter(newCharacterId(), newBackGroundColor()),
 }: Player): Player => ({
   id: id,
   playerName: playerName,
   character: character,
-  currentRoom: currentRoom,
 });
 
 export const defaultCharacter = (
@@ -56,8 +54,8 @@ export const defaultGameRoomSettings = (
 
 export const defaultGameRoom = (
   roomId: string,
-  roomOwner: string,
-  playersInRoom: []
+  roomOwner: Player,
+  playersInRoom = []
 ): GameRoom => ({
   roomId: roomId,
   roomOwner: roomOwner,
@@ -67,29 +65,26 @@ export const defaultGameRoom = (
 
 /* Create random IDs or Keys required by webapp */
 
-/* returns a n character pseudo-random alphanumeric code (w/ symbols) using Math.random */
+/* returns a n character pseudo-random alphanumeric code using Math.random */
 const randomAlphaNumericCode = (n: number): string => {
   let code: string = "";
-  const symbols = ["!", "@", "#", "$", ">", "(", "^", ")", "<", "\\"];
 
   for (let i = 0; i < n; i++) {
-    let randInt: number = Math.floor(
-      Math.random() * (10 + 26 + 26 + symbols.length)
-    ); // Numbers, Lowercase, Uppercase, Signs
+    let randInt: number = Math.floor(Math.random() * (10 + 26 + 26)); // Numbers, Lowercase, Uppercase
 
     if (randInt < 10) code += `${randInt}`;
-    else if (randInt < 36) code += "a" + (randInt - 10);
-    else if (randInt < 62) code += "A" + (randInt - 36);
-    else code += symbols[randInt - 62];
+    else if (randInt < 36)
+      code += String.fromCharCode("a".charCodeAt(0) + (randInt - 10));
+    else code += String.fromCharCode("A".charCodeAt(0) + (randInt - 36));
   }
   return code;
 };
 
 /* Two UUIDs combined to decrease probability of duplication */
-export const newPlayerId = () => `player${uuidv4()}-${uuidv4()}`;
+export const newPlayerId = () => `player-${uuidv4()}-${uuidv4()}`;
 
 /* 8 Character Pseudo-random Room ID */
-export const newRoomId = () => `room${randomAlphaNumericCode(8)}`;
+export const newRoomId = (): string => randomAlphaNumericCode(8);
 
 /* 8 Character Pseudo-random Room ID */
 export const newPlayerName = (): string =>

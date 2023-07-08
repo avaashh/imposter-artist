@@ -1,4 +1,4 @@
-import { Character, Player } from "../../types/User";
+import { Player } from "../../types/User";
 import * as actionTypes from "./redux-actions";
 
 /*
