@@ -8,18 +8,26 @@ import { store, persistor } from "../../utils/storage/store";
 
 import * as storage from "../../utils/storage/storage-container";
 
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Server, { SocketContext } from "../../assets/dist/server";
 
-import { ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+
+import "../styles/App.css";
+import "react-toastify/dist/ReactToastify.css";
 
 import Loader from "../Loader";
+import { handleIncomingMessages } from "../../assets/dist/contact";
 
 const App = () => {
   const [socket, setSocket] = React.useState<Server | null>(null);
   const [loadComplete, setLoadComplete] = React.useState(false);
 
   const [socketConnected, setSocketConnected] = React.useState(false);
+
+  const navigate = useNavigate();
+  const onSocketMessageHandler = (received: any) =>
+    handleIncomingMessages(JSON.parse(received.data), navigate, toast);
 
   React.useEffect(() => {
     const load = async () => {
@@ -28,14 +36,19 @@ const App = () => {
     };
 
     load()
-      .then(() => setSocket(new Server(() => setSocketConnected(true))))
+      .then(
+        () =>
+          socket === null &&
+          setSocket(
+            new Server(onSocketMessageHandler, () => setSocketConnected(true))
+          )
+      )
       .then(() => setLoadComplete(true));
-  }, []);
+  });
 
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <ToastContainer />
         {loadComplete && socketConnected ? (
           <SocketContext.Provider value={{ server: socket }}>
             <Outlet />

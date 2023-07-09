@@ -16,6 +16,8 @@ import { ThisPlayer } from "../../utils/storage/storage-container";
 import Popup from "../Windows";
 import DefaultInput from "../Inputs";
 
+import { ToastContainer } from "react-toastify";
+
 const PromptPlayer = () => {
   const { server } = React.useContext(SocketContext);
 
@@ -32,8 +34,7 @@ const PromptPlayer = () => {
             label={"Create a game"}
             style={{ margin: "5px" }}
             onClick={() =>
-              server !== null &&
-              server.createGameRoom(
+              server?.createGameRoom(
                 defaultGameRoom(newRoomId(), ThisPlayer(), [])
               )
             }
@@ -60,6 +61,7 @@ const PromptPlayer = () => {
               label="Join Room"
               disabled={roomCode.length === 0}
               style={{ width: "100%" }}
+              onClick={() => server?.joinRoomWithCode(roomCode, ThisPlayer())}
             />
             <DefaultButton
               label="Join a Random Room"
@@ -82,6 +84,7 @@ const HomeScreen = () => {
         backgroundSize: "contain",
       }}
     >
+      <ToastContainer />
       <section>
         <Link to="/" style={{ textDecoration: "none", color: "black" }}>
           <div className="headerComponent">

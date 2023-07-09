@@ -4,7 +4,7 @@ import "errors"
 
 var database (map[string]map[string]interface{})
 
-func Store(location string, key string, value interface{}) bool {
+func Store(location string, key string, value interface{}, force bool) bool {
 	if database == nil {
 		database = make(map[string]map[string]interface{})
 	}
@@ -13,7 +13,7 @@ func Store(location string, key string, value interface{}) bool {
 		database[location] = make(map[string]interface{})
 	}
 
-	if _, ok := database[location][key]; ok {
+	if _, ok := database[location][key]; ok && !force {
 		return false
 	}
 

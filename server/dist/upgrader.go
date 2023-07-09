@@ -27,7 +27,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		// Read message from the client
-		_, msg, err := conn.ReadMessage()
+		messageType, msg, err := conn.ReadMessage()
 		if err != nil {
 			// Failed to read message
 			log.Println("Failed to read message:", err)
@@ -43,7 +43,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		responseToReturn := handleIncomingRequest(receivedQuery)
+		responseToReturn := handleIncomingRequest(receivedQuery, conn, messageType)
 
 		// Convert the map to JSON format
 		responseJSON, err := json.Marshal(responseToReturn)

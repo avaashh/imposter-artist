@@ -3,8 +3,9 @@ package web
 // Staring and ending games
 const ActionCreateGame = "createGame"
 const ActionEndGame = "endGame"
-const ActionJoinPublicGame = "joinPublicGame"
-const ActionJoinPrivateGame = "joinPrivateGame"
+const ActionJoinRandomGame = "joinRandomGame"
+const ActionJoinGameWithCode = "joinGameWithCode"
+const ActionPlayerJoinedGame = "playerJoinedGame"
 
 // Change game settings
 const ActionUpdateGameSettings = "updateGameSettings"

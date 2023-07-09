@@ -1,0 +1,6 @@
+.Toastify__toast {
+  /* Apply the custom font */
+  font-family: "Poppins" !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}

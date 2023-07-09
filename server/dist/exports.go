@@ -1,5 +1,7 @@
 package dist
 
+import "github.com/gorilla/websocket"
+
 type Request struct {
 	ID		string		`json:"id,omitempty"`
     Type    string      `json:"type,omitempty"`
@@ -25,9 +27,11 @@ type Character struct {
 
 type GameRoom struct {
 	RoomId			string 				`json:"roomId,omitempty"` // Unique ID of the room
-	// RoomOwner 		Player				`json:"roomOwner,omitempty"` // User who owns the room
-	// Settings 		GameRoomSettings 	`json:"settings,omitempty"`// Settings of the game room
+	RoomOwner 		Player				`json:"roomOwner,omitempty"` // User who owns the room
+	Settings 		GameRoomSettings 	`json:"settings,omitempty"`// Settings of the game room
 	PlayersInRoom 	[]Player			`json:"playersInRoom,omitempty"` // Array of users currently in the room
+	GameState	 	string				`json:"gameState,omitempty"` // Array of users currently in the room
+	PlayersConn		[]*websocket.Conn
   }
 
   type GameRoomSettings struct {

@@ -6,6 +6,7 @@ interface GameRoom {
   roomOwner: Player; // User who owns the room
   settings: GameRoomSettings; // Settings of the game room
   playersInRoom: Player[]; // Array of users currently in the room
+  gameState: "waiting" | "inProgress";
 }
 
 // Interface representing the settings of a GameRoom

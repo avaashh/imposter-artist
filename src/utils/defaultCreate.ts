@@ -61,6 +61,7 @@ export const defaultGameRoom = (
   roomOwner: roomOwner,
   settings: defaultGameRoomSettings(),
   playersInRoom: playersInRoom,
+  gameState: "waiting",
 });
 
 /* Create random IDs or Keys required by webapp */
