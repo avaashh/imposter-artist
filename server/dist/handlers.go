@@ -56,7 +56,7 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 
 		err := json.Unmarshal(payloadBytes, &gameRoom)
 		if err != nil {
-			response["err"] = err
+			response["err"] = "Could not understand request"
 			return res
 		}
 
@@ -67,12 +67,10 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 		}
 
 		response["success"] = true
-		response["gameRoomId"] = gameRoom.RoomId
+		response["gameRoom"] = gameRoom
 		return res
 	
 	case web.ActionJoinGameWithCode:
-		fmt.Println(payload)
-
 		roomId, idOk := payload["gameRoomId"].(string)
 		tryRequestedBy, playerOk := payload["player"]
 
@@ -82,13 +80,12 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 		}
 
 		var requestedBy Player;
-		marsh, _ :=json.Marshal(tryRequestedBy)
+		marsh, _ := json.Marshal(tryRequestedBy)
 		err := json.Unmarshal(marsh, &requestedBy)
 		if err != nil {
 			response["err"] = err
 			return res
 		}
-
 
 		roomSearch, err := database.Fetch("gamerooms", roomId)
 		if err != nil {
@@ -107,8 +104,17 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 			return res
 		}
 
-		roomInfo.PlayersInRoom = append(roomInfo.PlayersInRoom, requestedBy)
-		roomInfo.PlayersConn = append(roomInfo.PlayersConn, conn)
+		ok := false
+		for _, player := range roomInfo.PlayersInRoom {
+			if player.Id == requestedBy.Id {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			roomInfo.PlayersInRoom= append(roomInfo.PlayersInRoom, requestedBy)
+			roomInfo.PlayersConn = append(roomInfo.PlayersConn, conn)
+		}
 
 		database.Store("gamerooms", roomInfo.RoomId, roomInfo, true)
 		
@@ -120,7 +126,7 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 		byteReturn, _ := json.Marshal(res)
 
 		for _, c := range roomInfo.PlayersConn {
-			if  c!= conn {
+			if  c != conn {
 				c.WriteMessage(messageType, byteReturn)
 			}
 		}

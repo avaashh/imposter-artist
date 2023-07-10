@@ -29,8 +29,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		// Read message from the client
 		messageType, msg, err := conn.ReadMessage()
 		if err != nil {
-			// Failed to read message
-			log.Println("Failed to read message:", err)
+			// this means player has disconnected
 			break
 		}
 
