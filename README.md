@@ -1,10 +1,8 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-# Imposter Artist
+## Imposter Artist
 
 Imposter Artist is a web application that brings the popular party game, Imposter Artist, to the digital realm. Enjoy hours of creative deception and deduction with your friends from anywhere, anytime.
 
-## Features
+### Features
 
 - **Real-time Collaboration:** Collaborate with other players on a shared drawing canvas in real-time.
 - **Role Assignments:** Players are assigned roles as artists or imposters.
@@ -15,46 +13,50 @@ Imposter Artist is a web application that brings the popular party game, Imposte
 - **Backend Server in Go:** The backend server is implemented in Go, utilizing Gorilla WebSockets for real-time communication.
 - **Database Integration:** Connect to a database for word or phrase retrieval.
 
-## Getting Started
+### Getting Started
 
 To get started with Imposter Artist, follow these steps:
 
 1. Clone the repository:
 
-### `git clone https://github.com/avaashh/imposter-artist.git`
+#### `git clone https://github.com/avaashh/imposter-artist.git`
 
 2. Navigate to the project directory:
 
-### `cd imposter-artist`
+#### `cd imposter-artist`
 
 3. Install dependencies for the frontend:
 
-### `yarn install`
+#### `yarn install`
 
 4. Run the frontend application:
 
-### `yarn start`
+#### `yarn start`
 
 5. Navigate to the `server` directory:
 
-### `cd server`
+#### `cd server`
 
 6. Install dependencies for the backend:
 
-### `go get ./...`
+#### `go get ./...`
 
 7. Start the backend server:
 
-### `go run main.go`
+#### `go run main.go`
 
 8. Access the application in your web browser at `http://localhost:3000`.
 
-## Contributing
+### Contributing
 
 Contributions are welcome! If you find a bug, have suggestions for improvements, or would like to add new features, please open an issue or submit a pull request.
 
 When contributing, please follow the existing coding style and adhere to the project's license.
 
-## License
+### License
 
 This project is licensed under the [GPL-3.0 license](https://github.com/avaashh/imposter-artist/blob/main/LICENSE).
+
+### Bootstrapping
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and [Golang Init](https://go.dev/doc/modules/managing-dependencies#naming_module)
