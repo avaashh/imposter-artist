@@ -1,50 +1,60 @@
-### Getting Started with Create React App
-
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+# Imposter Artist
 
-In the project directory, you can run:
+Imposter Artist is a web application that brings the popular party game, Imposter Artist, to the digital realm. Enjoy hours of creative deception and deduction with your friends from anywhere, anytime.
+
+## Features
+
+- **Real-time Collaboration:** Collaborate with other players on a shared drawing canvas in real-time.
+- **Role Assignments:** Players are assigned roles as artists or imposters.
+- **Customizable Rooms:** Create or join rooms with customizable settings such as maximum players and imposters, language, drawing time, and rounds.
+- **Lobby Functionality:** Invite friends and manage room settings from the lobby.
+- **Random Word/Phrase Generation:** Non-imposter players receive random words or phrases for drawing.
+- **Frontend State Management:** Use Redux for frontend state management, including persistence of player names and characters.
+- **Backend Server in Go:** The backend server is implemented in Go, utilizing Gorilla WebSockets for real-time communication.
+- **Database Integration:** Connect to a database for word or phrase retrieval.
+
+## Getting Started
+
+To get started with Imposter Artist, follow these steps:
+
+1. Clone the repository:
+
+### `git clone https://github.com/avaashh/imposter-artist.git`
+
+2. Navigate to the project directory:
+
+### `cd imposter-artist`
+
+3. Install dependencies for the frontend:
+
+### `yarn install`
+
+4. Run the frontend application:
 
 ### `yarn start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+5. Navigate to the `server` directory:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### `cd server`
 
-### `yarn test`
+6. Install dependencies for the backend:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `go get ./...`
 
-### `yarn build`
+7. Start the backend server:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `go run main.go`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+8. Access the application in your web browser at `http://localhost:3000`.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Contributing
 
-### `yarn eject`
+Contributions are welcome! If you find a bug, have suggestions for improvements, or would like to add new features, please open an issue or submit a pull request.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+When contributing, please follow the existing coding style and adhere to the project's license.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## License
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-# To learn React, check out the [React documentation](https://reactjs.org/).
-
-# imposter-artist
-
-Imposter Artist: The ultimate web app for playing the creative deception game with friends or strangers, anytime, anywhere!
+This project is licensed under the [GPL-3.0 license](https://github.com/avaashh/imposter-artist/blob/main/LICENSE).
