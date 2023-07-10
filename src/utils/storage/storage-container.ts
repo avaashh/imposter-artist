@@ -10,11 +10,18 @@ import {
   newPlayerName,
 } from "../defaultCreate";
 import { Player } from "../../types/User";
+import { GameRoom } from "../../types/Room";
 
 export const StorePlayer = (player: Player) =>
   store.dispatch({
     type: actionTypes.updatePlayer,
     payload: player,
+  });
+
+export const StoreGameRoom = (gameRoom: GameRoom | null) =>
+  store.dispatch({
+    type: actionTypes.updateGameRoom,
+    payload: gameRoom,
   });
 
 export const ChangeCharacter = (

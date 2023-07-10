@@ -48,6 +48,14 @@ const reducer = (state: ReduxState = {}, action: ReduxAction): ReduxState => {
       }
       return state;
 
+    case actionTypes.updateGameRoom:
+      if (state.player !== undefined && state.player !== null)
+        return {
+          ...state,
+          player: { ...state.player, currentRoom: action.payload },
+        };
+      return state;
+
     default:
       return state;
   }

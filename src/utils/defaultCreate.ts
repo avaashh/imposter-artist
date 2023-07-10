@@ -12,6 +12,7 @@ import {
 
 // Identifiers
 import { v4 as uuidv4 } from "uuid";
+import { ThisPlayer } from "./storage/storage-container";
 
 /* Create Default Variables of User-Defined types */
 export const defaultPlayer = ({
@@ -54,13 +55,12 @@ export const defaultGameRoomSettings = (
 
 export const defaultGameRoom = (
   roomId: string,
-  roomOwner: Player,
-  playersInRoom = []
+  roomOwner: Player
 ): GameRoom => ({
   roomId: roomId,
   roomOwner: roomOwner,
   settings: defaultGameRoomSettings(),
-  playersInRoom: playersInRoom,
+  playersInRoom: [roomOwner],
   gameState: "waiting",
 });
 

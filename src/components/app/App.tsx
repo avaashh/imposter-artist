@@ -27,7 +27,11 @@ const App = () => {
 
   const navigate = useNavigate();
   const onSocketMessageHandler = (received: any) =>
-    handleIncomingMessages(JSON.parse(received.data), navigate, toast);
+    handleIncomingMessages(received, navigate, toast);
+
+  window.onbeforeunload = () => {
+    storage.StoreGameRoom(null);
+  };
 
   React.useEffect(() => {
     const load = async () => {

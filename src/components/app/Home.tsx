@@ -19,6 +19,9 @@ import DefaultInput from "../Inputs";
 import { ToastContainer } from "react-toastify";
 
 const PromptPlayer = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const joinGameValue = urlParams.get("joingame");
+
   const { server } = React.useContext(SocketContext);
 
   const [isVisible, setIsVisible] = React.useState(false);
@@ -34,15 +37,17 @@ const PromptPlayer = () => {
             label={"Create a game"}
             style={{ margin: "5px" }}
             onClick={() =>
-              server?.createGameRoom(
-                defaultGameRoom(newRoomId(), ThisPlayer(), [])
-              )
+              server?.createGameRoom(defaultGameRoom(newRoomId(), ThisPlayer()))
             }
           />
           <DefaultButton
-            label={"Join a room"}
+            label={"Join" + (joinGameValue === null ? " a" : "") + " room"}
             style={{ margin: "5px" }}
-            onClick={() => setIsVisible(true)}
+            onClick={() =>
+              joinGameValue === null
+                ? setIsVisible(true)
+                : server?.joinRoomWithCode(joinGameValue, ThisPlayer())
+            }
           />
         </div>
       </div>

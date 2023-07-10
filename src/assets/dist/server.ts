@@ -17,17 +17,29 @@ export const SocketContext = React.createContext<ServerProps>({
 export default class Server {
   // Properties
   socket: WebSocket;
+  messageHandlers: ((m: any) => void)[];
 
   // Constructor
   constructor(onMessage: (m: any) => void, onConnect: () => void) {
     this.socket = new WebSocket(`ws://${endPoint}/ws`);
     this.socket.onopen = onConnect;
-    this.socket.onmessage = onMessage;
+
+    this.messageHandlers = [onMessage];
+
+    this.socket.onmessage = (m) =>
+      this.messageHandlers.forEach((h) => h(JSON.parse(m.data)));
+    this.socket.onclose = console.log;
+    this.socket.onerror = () => window.location.replace("");
   }
 
   // Methods
   getSocket = () => {
     return this.socket;
+  };
+
+  addMessageHandler = (handler: (m: any) => void) => {
+    if (!this.messageHandlers.includes(handler))
+      this.messageHandlers.push(handler);
   };
 
   createGameRoom = (gameRoom: GameRoom) => {

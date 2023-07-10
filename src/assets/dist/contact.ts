@@ -1,16 +1,21 @@
 //
 
+import { StoreGameRoom } from "../../utils/storage/storage-container";
+
 export const handleIncomingMessages = (
   message: any,
   navigate: (v: any) => void,
   toast: (v: any, k: any) => void
 ) => {
-  console.log(message);
+  // console.log(message);
   switch (message.type) {
     case "createGame":
-      if (message.payload.success)
-        navigate(`/lobby/${message.payload.gameRoomId}`);
-      else
+      if (message.payload.success) {
+        const currentRoom = message.payload.gameRoom;
+        StoreGameRoom(currentRoom);
+
+        navigate(`/lobby/${message.payload.gameRoom.roomId}`);
+      } else
         toast(message.payload.err, {
           position: "top-right",
           autoClose: 5000,
@@ -23,9 +28,12 @@ export const handleIncomingMessages = (
         });
       return;
     case "joinGameWithCode":
-      if (message.payload.success)
+      if (message.payload.success) {
+        const currentRoom = message.payload.gameRoom;
+        StoreGameRoom(currentRoom);
+
         navigate(`/lobby/${message.payload.gameRoom.roomId}`);
-      else
+      } else
         toast(message.payload.err, {
           position: "top-right",
           autoClose: 5000,
@@ -37,8 +45,7 @@ export const handleIncomingMessages = (
           theme: "light",
         });
       return;
-    case "playerJoinedGame":
-      console.log(message);
+    default:
       return;
   }
 };

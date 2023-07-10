@@ -5,6 +5,7 @@ export interface Player {
   id: string; // Unique ID of the Player
   playerName: string; // Name of the Player
   character?: Character; // Player's default character
+  currentRoom?: GameRoom;
 }
 
 // Interface representing a Character
