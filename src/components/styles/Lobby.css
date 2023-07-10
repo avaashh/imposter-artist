@@ -6,3 +6,54 @@
   padding-right: 20px;
   justify-content: center;
 }
+
+.player-holder-container {
+  width: 90vh;
+  max-width: 500px;
+  padding: 2px;
+}
+
+.long-dash {
+  position: relative;
+}
+
+.row-align {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+
+.long-dash::before,
+.long-dash::after {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.long-dash::before {
+  left: 0;
+  content: "----------------- x";
+}
+
+.long-dash::after {
+  right: 0;
+  content: "x -----------------";
+}
+
+.long-dash span {
+  background-color: white;
+  padding: 0 10px;
+}
+
+/* Styles for narrow mobile screens */
+@media (max-width: 420px) {
+  .long-dash::before {
+    content: "------------- x";
+  }
+
+  .long-dash::after {
+    content: "x -------------";
+  }
+}

@@ -2,7 +2,6 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 
 import background from "../../assets/img/background.svg";
-import logo from "../../assets/img/logo.svg";
 import "../styles/Home.css";
 
 import { DefaultButton } from "../Buttons";
@@ -17,6 +16,7 @@ import Popup from "../Windows";
 import DefaultInput from "../Inputs";
 
 import { ToastContainer } from "react-toastify";
+import { LargeLogoHeader } from "../Logo";
 
 const PromptPlayer = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -91,15 +91,7 @@ const HomeScreen = () => {
     >
       <ToastContainer />
       <section>
-        <Link to="/" style={{ textDecoration: "none", color: "black" }}>
-          <div className="headerComponent">
-            <img src={logo} className="appLogo" alt="Logo" />
-            <div className="headerSalutation">
-              <h5 className="headerWelcome">Welcome to</h5>
-              <h1 className="headerImposter">Imposter Artist!</h1>
-            </div>
-          </div>
-        </Link>
+        <LargeLogoHeader />
       </section>
 
       <section>

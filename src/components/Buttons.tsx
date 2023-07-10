@@ -6,6 +6,7 @@ type DefaultButtonProps = {
   onClick?: () => void;
   disabled?: boolean;
   style?: {};
+  className?: string;
 };
 
 export const DefaultButton: React.FC<DefaultButtonProps> = ({
@@ -13,10 +14,11 @@ export const DefaultButton: React.FC<DefaultButtonProps> = ({
   onClick,
   disabled,
   style,
+  className,
 }) => {
   return (
     <button
-      className={`default-button ${disabled ? "disabled" : ""}`}
+      className={`default-button ${disabled ? "disabled" : ""} ${className}`}
       onClick={onClick}
       disabled={disabled}
       style={style}

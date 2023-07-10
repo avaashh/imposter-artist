@@ -69,18 +69,18 @@ export const SmallCharacterTag = ({
     <section style={{ padding: 5 }}>
       <div
         style={{
-          width: "100px",
-          height: "100px",
+          width: "75px",
+          height: "75px",
           backgroundColor: player.character?.characterColor,
         }}
         className="characterContainer"
       >
         <img
           style={{
-            width: "95px",
-            height: "95px",
-            maxWidth: "200px",
-            maxHeight: "200px",
+            width: "70px",
+            height: "70px",
+            // maxWidth: "200px",
+            // maxHeight: "200px",
             objectFit: "contain",
           }}
           src={require(`../assets/characters/${player.character?.characterIdentity}.svg`)}
@@ -89,13 +89,14 @@ export const SmallCharacterTag = ({
       </div>
       <p
         style={{
-          width: "100px",
+          width: "75px",
           textAlign: "center",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           lineHeight: 1,
           fontWeight: 500,
+          fontSize: 14,
           flexWrap: "wrap",
         }}
       >
@@ -103,10 +104,10 @@ export const SmallCharacterTag = ({
         {isOwner && (
           <img
             src={verified}
-            alt="verified"
-            width={15}
-            height={15}
-            style={{ paddingLeft: 5 }}
+            alt="Room Owner"
+            width={12}
+            height={12}
+            style={{ paddingLeft: 2 }}
           />
         )}
       </p>

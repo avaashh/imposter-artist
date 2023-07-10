@@ -25,9 +25,22 @@ body {
   padding: 5px;
 }
 
+.headerComponentSmall {
+  justify-content: center;
+  align-items: flex-end;
+  margin-top: 15px;
+  padding: 5px;
+}
+
 .appLogo {
   max-width: 100px;
   max-height: 100px;
+  padding: 5px;
+}
+
+.appLogoSmall {
+  max-width: 50px;
+  max-height: 50px;
   padding: 5px;
 }
 
@@ -83,6 +96,10 @@ body {
   justify-content: center;
 }
 
+.bordered {
+  border: 1px solid red;
+}
+
 .refreshCharacter {
   max-width: 35px;
   max-height: 35px;
@@ -91,6 +108,13 @@ body {
   right: 10px;
   cursor: pointer;
   transition: width 0.3s, height 0.3s;
+}
+
+.headerSalutationSmall {
+  width: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .refreshCharacter:hover {
