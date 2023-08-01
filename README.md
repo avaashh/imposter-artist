@@ -49,17 +49,18 @@ To get started with Imposter Artist, follow these steps:
 
 ### Objectives:
 
-1. (✅) Create Rooms
-2. (✅) Join Rooms with code
-3. (➖) Join random open rooms
-4. (✅) Players join game room
-5. (➖) Room owner priviledges to change room settings
-6. (➖) Kick/ban users from room
-7. (✅) Randomize colors each game for players
-8. (✅) Send strokes to all players except the creator of stroke
-9. (➖) Fetch a random word from database for each round
-10. (➖) Create a turn system for drawing
-11. (➖) Add a voting system
+1.  (Frontend: ✅, Backend: ✅) Create Rooms
+2.  (Frontend: ✅, Backend: ✅) Join Rooms with code
+3.  (Frontend: ➖, Backend: ➖) Join random open rooms
+4.  (Frontend: ✅, Backend: ✅) Players join game room
+5.  (Frontend: ➖, Backend: ✅) Room owner priviledges to change room settings
+6.  (Frontend: ➖, Backend: ➖) Kick/ban users from room
+7.  (Frontend: ✅, Backend: ✅) Randomize colors each game for players
+8.  (Frontend: ➖, Backend: ✅) Randomize an imposter each round from players
+9.  (Frontend: ✅, Backend: ✅) Send strokes to all players except the creator of stroke
+10. (Frontend: ➖, Backend: ➖) Fetch a random word from database for each round
+11. (Frontend: ✅, Backend: ➖) Create a turn system for drawing
+12. (Frontend: ➖, Backend: ➖) Add a voting system
 
 ### Contributing
 
