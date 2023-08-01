@@ -1,39 +1,9 @@
 package database
 
-import (
-	"errors"
-	"math/rand"
-)
+import "errors"
+
 
 var database (map[string]map[string]interface{})
-
-func Colors(from int, to int) ([]string, error) {
-	colors := [12] string{
-		"#8b4513",
-		"#228b22",
-		"#4b0082",
-		"#ff0000",
-		"#ffff00",
-		"#00ff00",
-		"#00ffff",
-		"#ff00ff",
-		"#6495ed",
-		"#ffe4b5",
-		"#ff69b4",
-	}
-
-	// Shuffle colors
-	for i := range colors {
-		j := rand.Intn(i + 1)
-		colors[i], colors[j] = colors[j], colors[i]
-	}
-
-	if from < 0 || from >= len(colors) || to < 0 || to >= len(colors) {
-		return nil, errors.New("Colors out of bounds")
-	}
-
-	return  colors[from : to], nil
-}
 
 func Store(location string, key string, value interface{}, force bool) bool {
 	if database == nil {

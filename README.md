@@ -61,6 +61,7 @@ To get started with Imposter Artist, follow these steps:
 10. (Frontend: ➖, Backend: ➖) Fetch a random word from database for each round
 11. (Frontend: ✅, Backend: ➖) Create a turn system for drawing
 12. (Frontend: ➖, Backend: ➖) Add a voting system
+13. (Frontend: ✅, Backend: ➖) Efficient and reliable storage
 
 ### Contributing
 

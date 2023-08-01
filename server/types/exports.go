@@ -47,8 +47,9 @@ type GameRoomSettings struct {
 }
 
 type ActiveGameRoomSecrets struct {
+	RoomId		string
 	Imposter 	int
-	SecretWord	int
+	SecretWord	string
 	CurrentTurn	int
 }
 

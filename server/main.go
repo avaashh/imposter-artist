@@ -1,8 +1,14 @@
 package main
 
-import "imposterArtist/dist"
+import (
+	"math/rand"
+	"time"
+
+	"imposterArtist/dist"
+)
 
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	dist.AppServer();
 }
