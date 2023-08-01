@@ -1,23 +1,31 @@
 package database
 
-import "errors"
+import (
+	"errors"
+	"math/rand"
+)
 
 var database (map[string]map[string]interface{})
 
 func Colors(from int, to int) ([]string, error) {
 	colors := [12] string{
-		"#800000", // Maroon
-		"#9A6324", // Brown
-		"#469990", // Teal
-		"#000075", // Navy
-		"#e6194B", // Red
-		"#f58231", // Orange
-		"#ffe119", // Yellow
-		"#3cb44b", // Green
-		"#42d4f4", // Cyan
-		"#4363d8", // Blue
-		"#f032e6", // Magenta
-		"#fabed4", // Pink
+		"#8b4513",
+		"#228b22",
+		"#4b0082",
+		"#ff0000",
+		"#ffff00",
+		"#00ff00",
+		"#00ffff",
+		"#ff00ff",
+		"#6495ed",
+		"#ffe4b5",
+		"#ff69b4",
+	}
+
+	// Shuffle colors
+	for i := range colors {
+		j := rand.Intn(i + 1)
+		colors[i], colors[j] = colors[j], colors[i]
 	}
 
 	if from < 0 || from >= len(colors) || to < 0 || to >= len(colors) {

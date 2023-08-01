@@ -55,7 +55,7 @@ const PlayersTab: React.FC<PlayersTabProps> = ({ players, playerColors }) => {
   return (
     <section>
       {players.map((player, indx: number) => (
-        <div style={{ display: "flex", flexDirection: "row" }}>
+        <div key={indx} style={{ display: "flex", flexDirection: "row" }}>
           <SmallCharacterTag
             player={player}
             isOwner={player.id === player.currentRoom?.roomOwner.id}
@@ -140,6 +140,15 @@ const GameCanvas: React.FC = () => {
   const [addedStroke, setAddedStroke] = React.useState<Array<Point>>([
     { x: 0, y: 0, color: drawingBoardColor },
   ]);
+
+  const handleIncomingStroke = (message: any) => {
+    if (message.type === "sendStroke" && message.payload.success) {
+      if (message.payload.sentStroke !== null)
+        setAddedStroke(message.payload.sentStroke);
+    }
+  };
+
+  server?.addMessageHandler(handleIncomingStroke);
 
   if (server === null) return <></>;
   if (currentGame === undefined || currentGame === null) return <></>;

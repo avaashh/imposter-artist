@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"imposterArtist/types"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -34,7 +36,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Unmarshal received JSON data into a map
-		var receivedQuery Request
+		var receivedQuery types.Request
 		err = json.Unmarshal(msg, &receivedQuery)
 		if err != nil {
 			// Failed to unmarshal JSON

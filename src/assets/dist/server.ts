@@ -3,9 +3,10 @@ import * as React from "react";
 import { GameRoom } from "../../types/Room";
 import { v4 as uuidv4 } from "uuid";
 import { Player } from "../../types/User";
-import { Stroke, DrawnStroke } from "../../types/Drawing";
+import { Stroke } from "../../types/Drawing";
 
-const endPoint = "localhost:8000";
+// const endPoint = "localhost:8000";
+const endPoint = "e671-2404-7c00-48-38e0-fdf1-7f02-3107-8074.ngrok-free.app";
 
 interface ServerProps {
   server: Server | null;
@@ -54,12 +55,16 @@ export default class Server {
   };
 
   postStrokeToServer = (user: Player, stroke: Stroke) => {
-    const playersStroke: DrawnStroke = {
-      owner: user,
-      stroke: stroke,
-    };
-
-    console.log(playersStroke);
+    this.socket.send(
+      JSON.stringify({
+        id: `request-${uuidv4()}`,
+        type: "sendStroke",
+        payload: {
+          stroke: stroke,
+          roomId: user.currentRoom?.roomId,
+        },
+      })
+    );
   };
 
   joinRoomWithCode = (gameRoomId: string, player: Player) => {

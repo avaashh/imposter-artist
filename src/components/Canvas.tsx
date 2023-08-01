@@ -33,6 +33,7 @@ const Canvas: React.FC<CanvasProps> = ({
 }) => {
   const pointNormalizer: number = 100 / size;
 
+  const [update, setUpdate] = React.useState<number>(0);
   const [lines, setLines] = React.useState<Point[][]>([]);
   const prevPos = React.useRef<Point | null>(null);
 
@@ -85,14 +86,16 @@ const Canvas: React.FC<CanvasProps> = ({
     setDrawingEnabled(false);
     setIsDrawing(false);
     prevPos.current = null;
+    setUpdate(update + 1);
   };
 
   React.useEffect(() => {
-    server.postStrokeToServer(player, lines[lines.length - 1]);
-  }, [lines]);
+    if (update !== 0)
+      server.postStrokeToServer(player, lines[lines.length - 1]);
+  }, [update]);
 
   React.useEffect(() => {
-    const currLines = [...lines];
+    let currLines = [...lines];
     setLines(currLines.concat([addedStroke]));
   }, [addedStroke]);
 

@@ -1,4 +1,4 @@
-package dist
+package types
 
 import "github.com/gorilla/websocket"
 
@@ -35,7 +35,7 @@ type GameRoom struct {
 	PlayerColors 	[]string
   }
 
-  type GameRoomSettings struct {
+type GameRoomSettings struct {
 	MaxPlayersInRoom 	int 	`json:"maxPlayersInRoom,omitempty"` // Maximum number of players allowed in the room
 	MaxImpostersInRoom	int 	`json:"maxImpostersInRoom,omitempty"` // Maximum number of imposters allowed in the room
 	Language 			string 	`json:"language,omitempty"` // Language setting for the room
@@ -44,6 +44,20 @@ type GameRoom struct {
 	DrawingRoundsLimit 	int 	`json:"drawingRoundsLimit,omitempty"` // Number of rounds in the game after which voting is enabled
 	VotingType 			string 	`json:"votingType,omitempty"`
 	RoomType 			string 	`json:"roomType,omitempty"` // Type of the room (public or private)
-  }
+}
+
+type ActiveGameRoomSecrets struct {
+	Imposter 	int
+	SecretWord	int
+	CurrentTurn	int
+}
+
+type Point struct  {
+	X 		float64 `json:"x,omitempty"`
+	Y		float64	`json:"y,omitempty"`
+	Color 	string 	`json:"color,omitempty"`
+}
+
+type Stroke = []Point
 
 const ServerPort = "8000"
