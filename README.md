@@ -19,33 +19,47 @@ To get started with Imposter Artist, follow these steps:
 
 1. Clone the repository:
 
-#### `git clone https://github.com/avaashh/imposter-artist.git`
+`git clone https://github.com/avaashh/imposter-artist.git`
 
 2. Navigate to the project directory:
 
-#### `cd imposter-artist`
+`cd imposter-artist`
 
 3. Install dependencies for the frontend:
 
-#### `yarn install`
+`yarn install`
 
 4. Run the frontend application:
 
-#### `yarn start`
+`yarn start`
 
 5. Navigate to the `server` directory:
 
-#### `cd server`
+`cd server`
 
 6. Install dependencies for the backend:
 
-#### `go get ./...`
+`go get ./...`
 
 7. Start the backend server:
 
-#### `go run main.go`
+`go run main.go`
 
 8. Access the application in your web browser at `http://localhost:3000`.
+
+### Objectives:
+
+1. (✅) Create Rooms
+2. (✅) Join Rooms with code
+3. (➖) Join random open rooms
+4. (✅) Players join game room
+5. (➖) Room owner priviledges to change room settings
+6. (➖) Kick/ban users from room
+7. (✅) Randomize colors each game for players
+8. (✅) Send strokes to all players except the creator of stroke
+9. (➖) Fetch a random word from database for each round
+10. (➖) Create a turn system for drawing
+11. (➖) Add a voting system
 
 ### Contributing
 
