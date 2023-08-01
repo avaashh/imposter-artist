@@ -1,11 +1,76 @@
-.container {
-  display: flex;
-  flex-direction: row;
+.fixed-container {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
 }
 
-.canvas {
-  border: 0.0625rem solid #9c9c9c;
-  border-radius: 0.25rem;
-  width: 90vh;
-  height: 90vh;
+.game-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.players-sidebar,
+.tools-sidebar {
+  display: flex;
+  flex: 1;
+  background-color: #f0f0f0;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: auto;
+  flex-direction: column;
+}
+
+.tools-sidebar {
+  flex: 0.75;
+}
+
+.players-sidebar {
+  flex: 0.5;
+}
+
+.players {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.player {
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+  background-color: #ccc;
+}
+
+.game-canvas {
+  flex: 2;
+  background-color: #dddddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  /* Remove the aspect-ratio property */
+  max-width: 100%;
+  max-height: 100vh;
+  /* Add touch-action: none; to prevent default touch behavior */
+  touch-action: none;
+}
+
+/* Media query for phones and tablets */
+@media (max-width: 767px), (min-width: 768px) and (max-width: 1024px) {
+  .game-container {
+    flex-direction: column;
+  }
+
+  .players-sidebar,
+  .tools-sidebar {
+    flex-direction: row;
+  }
+
+  .player {
+    display: none; /* Hide the player profile pictures on small screens */
+  }
 }

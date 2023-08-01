@@ -59,14 +59,24 @@ const CharacterTag = (props: CharacterTagProps) => {
 interface SmallCharacterTagProps {
   player: Player;
   isOwner?: boolean;
+  nextToEachOther?: boolean;
+  children?: React.ReactNode;
 }
 
 export const SmallCharacterTag = ({
   player,
   isOwner,
+  nextToEachOther,
+  children,
 }: SmallCharacterTagProps) => {
   return (
-    <section style={{ padding: 5 }}>
+    <section
+      style={{
+        padding: 5,
+        display: "flex",
+        flexDirection: nextToEachOther ? "row" : "column",
+      }}
+    >
       <div
         style={{
           width: "75px",
@@ -101,6 +111,7 @@ export const SmallCharacterTag = ({
         }}
       >
         {player.playerName}
+        {children}
         {isOwner && (
           <img
             src={verified}

@@ -1,79 +1,185 @@
-import React, { useRef, useState, useCallback } from "react";
-
-import "../styles/GameCanvas.css"; // Import CSS module or define styles using a CSS-in-JS solution
+import React from "react";
 
 import Timer from "../Timer";
-import { useParams } from "react-router-dom";
-import { ReactSketchCanvas, ReactSketchCanvasRef } from "react-sketch-canvas";
+import Canvas from "../Canvas";
 
-// Defined Types
-import { Stroke } from "../../types/Drawing";
-// import postStrokeToServer from "../../utils/postStrokeToServer";
+import { useWindowDimensions } from "../../utils/windows";
+import { ThisPlayer } from "../../utils/storage/storage-container";
+import { newRandomKey } from "../../utils/defaultCreate";
 
-interface GameCanvasProps {}
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
 
-const GameCanvas: React.FC<GameCanvasProps> = () => {
-  const { gameID } = useParams();
-  console.log("Game ID:", gameID);
+import "../styles/GameCanvas.css";
+import { Player } from "../../types/User";
+import { ColorHex } from "react-countdown-circle-timer";
+import { SmallCharacterTag } from "../CharacterTag";
+import { SocketContext } from "../../assets/dist/server";
+import { Point } from "../../utils/bezierInterpolation";
 
-  const canvas = useRef<ReactSketchCanvasRef>(null);
-  const [canvasEnabled, setCanvasEnabled] = useState(true);
-  const [startedDrawing, setStartedDrawing] = useState(false);
+interface ToolsTabProps {
+  timerKey: string;
+  isDrawing: boolean;
+  drawingEnabled: boolean;
+  setDrawingEnabled: (v: boolean) => void;
+  allowedDrawingTime: number;
+}
 
-  const allowOnlyPointerType = canvasEnabled ? "all" : "none";
-
-  // Handler for the onStroke event of the canvas
-  const handleStroke = useCallback(
-    (stroke: Stroke) => {
-      if (!startedDrawing) {
-        // The user has just started drawing - previously not begun
-        setStartedDrawing(true);
-      } else {
-        // The user has just finished drawing - previously begun
-        setCanvasEnabled(!canvasEnabled);
-        console.log(stroke);
-      }
-    },
-    [canvasEnabled, startedDrawing]
+const ToolsTab: React.FC<ToolsTabProps> = ({
+  timerKey,
+  isDrawing,
+  drawingEnabled,
+  setDrawingEnabled,
+  allowedDrawingTime,
+}) => {
+  return (
+    <section style={{ opacity: !drawingEnabled ? 0.25 : 1 }}>
+      <Timer
+        whatKey={timerKey}
+        isPlaying={isDrawing}
+        duration={allowedDrawingTime}
+        colors={["#000000", "#000000", "#000000"]}
+        colorsTime={[allowedDrawingTime, allowedDrawingTime / 2, 0]}
+        onComplete={() => setDrawingEnabled(false)}
+      />
+    </section>
   );
+};
 
-  // Handler for the Timer component's OnComplete event
-  const handleTimerComplete = useCallback(() => {
-    // Time is up for drawing
-    setCanvasEnabled((prevEnabled) => !prevEnabled);
-    if (canvas.current) {
-      // Make sure canvas is not null
-      canvas.current
-        .exportPaths()
-        // The last path has been created most recently on the canvas
-        .then((paths) => paths[paths.length - 1])
-        .then((stroke: Stroke) => {
-          // postStrokeToServer( , stroke);
-        });
+interface PlayersTabProps {
+  players: Player[];
+  playerColors: ColorHex[] | undefined;
+}
+
+const PlayersTab: React.FC<PlayersTabProps> = ({ players, playerColors }) => {
+  return (
+    <section>
+      {players.map((player, indx: number) => (
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <SmallCharacterTag
+            player={player}
+            isOwner={player.id === player.currentRoom?.roomOwner.id}
+            nextToEachOther={true}
+          >
+            {playerColors && (
+              <span
+                style={{
+                  width: 50,
+                  height: 10,
+                  backgroundColor: playerColors[indx],
+                }}
+              ></span>
+            )}
+          </SmallCharacterTag>
+        </div>
+      ))}
+    </section>
+  );
+};
+
+const GameCanvas: React.FC = () => {
+  const navigate = useNavigate();
+  const { gameID } = useParams();
+
+  const player = ThisPlayer();
+  const currentGame = player.currentRoom;
+
+  const { server } = React.useContext(SocketContext);
+
+  React.useEffect(() => {
+    if (currentGame === undefined || currentGame === null) {
+      navigate(`/?joingame=${gameID}`);
     }
-  }, [canvas]);
+  });
+
+  const { width, height } = useWindowDimensions();
+
+  const [drawingEnabled, setDrawingEnabled] = React.useState<boolean>(true);
+  const [isDrawing, setIsDrawing] = React.useState<boolean>(false);
+  const [timerKey, setTimerKey] = React.useState<string>(newRandomKey());
+
+  const canvasRef = React.useRef<HTMLDivElement>(null);
+  const [size, setSize] = React.useState(0);
+
+  React.useEffect(() => {
+    if (canvasRef.current) {
+      const windowSize = Math.min(
+        canvasRef.current.clientWidth,
+        canvasRef.current.clientHeight
+      );
+      setSize(windowSize * 0.95);
+    }
+  }, [width, height]);
+
+  React.useEffect(() => {
+    if (drawingEnabled)
+      toast("Its your turn to draw!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+  }, [drawingEnabled]);
+
+  const allowDrawing = () => {
+    if (drawingEnabled) return;
+    setTimerKey(newRandomKey());
+    setDrawingEnabled(true);
+  };
+
+  const drawingBoardColor = currentGame?.playerColors
+    ? currentGame.playerColors[
+        currentGame.playersInRoom.map((v) => v.id).indexOf(player.id)
+      ]
+    : "#000";
+
+  const [addedStroke, setAddedStroke] = React.useState<Array<Point>>([
+    { x: 0, y: 0, color: drawingBoardColor },
+  ]);
+
+  if (server === null) return <></>;
+  if (currentGame === undefined || currentGame === null) return <></>;
 
   return (
-    <div className={"container"}>
-      {/* Canvas */}
-      <ReactSketchCanvas
-        ref={canvas}
-        height={"400"}
-        strokeWidth={5}
-        className={"canvas"}
-        strokeColor="black"
-        onStroke={handleStroke}
-        allowOnlyPointerType={allowOnlyPointerType}
-      />
+    <div className="fixed-container">
+      <ToastContainer />
+      <div className="game-container">
+        <div className="players-sidebar">
+          <h2 onClick={allowDrawing}>Players</h2>
+          <PlayersTab
+            players={currentGame.playersInRoom}
+            playerColors={currentGame.playerColors}
+          />
+        </div>
 
-      {/* Timer component */}
-      <Timer
-        isPlaying={startedDrawing && canvasEnabled}
-        duration={2}
-        colors={["#27AE60", "#D4AC0D", "#DC7633", "#C0392B"]}
-        colorsTime={[0.75, 0.5, 0.25, 0]}
-        OnComplete={handleTimerComplete}
-      />
+        <div className="game-canvas" ref={canvasRef}>
+          <Canvas
+            player={player}
+            size={size}
+            drawingEnabled={drawingEnabled}
+            drawColor={drawingBoardColor}
+            isDrawing={isDrawing}
+            setIsDrawing={setIsDrawing}
+            setDrawingEnabled={setDrawingEnabled}
+            server={server}
+            addedStroke={addedStroke}
+          />
+        </div>
+        <div className="tools-sidebar">
+          <h2>Tools</h2>
+          <ToolsTab
+            timerKey={timerKey}
+            allowedDrawingTime={currentGame.settings.drawingTime}
+            isDrawing={isDrawing}
+            drawingEnabled={drawingEnabled}
+            setDrawingEnabled={setDrawingEnabled}
+          />
+        </div>
+      </div>
     </div>
   );
 };

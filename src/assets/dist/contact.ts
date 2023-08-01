@@ -7,7 +7,6 @@ export const handleIncomingMessages = (
   navigate: (v: any) => void,
   toast: (v: any, k: any) => void
 ) => {
-  // console.log(message);
   switch (message.type) {
     case "createGame":
       if (message.payload.success) {

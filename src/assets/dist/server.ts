@@ -3,6 +3,7 @@ import * as React from "react";
 import { GameRoom } from "../../types/Room";
 import { v4 as uuidv4 } from "uuid";
 import { Player } from "../../types/User";
+import { Stroke, DrawnStroke } from "../../types/Drawing";
 
 const endPoint = "localhost:8000";
 
@@ -52,6 +53,15 @@ export default class Server {
     );
   };
 
+  postStrokeToServer = (user: Player, stroke: Stroke) => {
+    const playersStroke: DrawnStroke = {
+      owner: user,
+      stroke: stroke,
+    };
+
+    console.log(playersStroke);
+  };
+
   joinRoomWithCode = (gameRoomId: string, player: Player) => {
     this.socket.send(
       JSON.stringify({
@@ -63,5 +73,16 @@ export default class Server {
         },
       })
     );
+  };
+
+  startGame = (gameRoom: GameRoom | undefined) => {
+    if (gameRoom !== undefined)
+      this.socket.send(
+        JSON.stringify({
+          id: `request-${uuidv4()}`,
+          type: "startGame",
+          payload: { roomId: gameRoom.roomId },
+        })
+      );
   };
 }

@@ -11,5 +11,8 @@ const ActionPlayerJoinedGame = "playerJoinedGame"
 const ActionUpdateGameSettings = "updateGameSettings"
 
 // Playing
+const ActionStartGame = "startGame"
+
 const ActionSendStroke = "sendStroke"
 const ActionSendVote = "sendVote"
+

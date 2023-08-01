@@ -12,7 +12,6 @@ import {
 
 // Identifiers
 import { v4 as uuidv4 } from "uuid";
-import { ThisPlayer } from "./storage/storage-container";
 
 /* Create Default Variables of User-Defined types */
 export const defaultPlayer = ({
@@ -37,7 +36,7 @@ export const defaultGameRoomSettings = (
   maxPlayersInRoom = 8,
   maxImpostersInRoom = 1,
   language = "en",
-  drawingTime = 3,
+  drawingTime = 2,
   rounds = 8,
   drawingRoundsLimit = 2,
   votingType: "once" | "continued" = "once",
@@ -65,6 +64,9 @@ export const defaultGameRoom = (
 });
 
 /* Create random IDs or Keys required by webapp */
+export const newRandomKey = (): string => {
+  return uuidv4();
+};
 
 /* returns a n character pseudo-random alphanumeric code using Math.random */
 const randomAlphaNumericCode = (n: number): string => {
@@ -81,8 +83,8 @@ const randomAlphaNumericCode = (n: number): string => {
   return code;
 };
 
-/* Two UUIDs combined to decrease probability of duplication */
-export const newPlayerId = () => `player-${uuidv4()}-${uuidv4()}`;
+/* Two random keys combined to decrease probability of duplication */
+export const newPlayerId = () => `player-${newRandomKey()}-${newRandomKey()}`;
 
 /* 8 Character Pseudo-random Room ID */
 export const newRoomId = (): string => randomAlphaNumericCode(8);

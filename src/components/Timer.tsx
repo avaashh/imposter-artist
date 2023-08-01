@@ -45,23 +45,30 @@ const RenderTime = ({ remainingTime }: any) => {
 };
 
 interface TimerProps {
+  whatKey?: string;
   isPlaying: boolean;
   duration: number;
   colors: { 0: ColorHex } & { 1: ColorHex } & ColorHex[];
   colorsTime: { 0: number } & { 1: number } & number[];
-  OnComplete?: (totalElapsedTime: number) => void;
+  onComplete?: (totalElapsedTime: number) => void;
 }
 
-const Timer: React.FC<TimerProps> = (props) => {
-  const { isPlaying, duration, colors, colorsTime, OnComplete } = props;
-
+const Timer: React.FC<TimerProps> = ({
+  whatKey,
+  isPlaying,
+  duration,
+  colors,
+  colorsTime,
+  onComplete,
+}) => {
   return (
     <CountdownCircleTimer
+      key={whatKey}
       isPlaying={isPlaying}
       duration={duration}
       colors={colors}
       colorsTime={colorsTime}
-      onComplete={OnComplete}
+      onComplete={onComplete}
     >
       {RenderTime}
     </CountdownCircleTimer>

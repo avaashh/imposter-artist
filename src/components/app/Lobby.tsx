@@ -9,7 +9,10 @@ import { SmallCharacterTag } from "../CharacterTag";
 import { useNavigate, useParams } from "react-router-dom";
 import { SocketContext } from "../../assets/dist/server";
 import { Player } from "../../types/User";
-import { StoreGameRoom } from "../../utils/storage/storage-container";
+import {
+  StoreGameRoom,
+  ThisPlayer,
+} from "../../utils/storage/storage-container";
 import { SmallLogoHeader } from "../Logo";
 import { DefaultButton } from "../Buttons";
 import DefaultInput, { SelectorInput } from "../Inputs";
@@ -20,8 +23,10 @@ interface LobbyPlayerHolderProps {
   currentPlayer?: Player | null;
   playersInLobby?: Player[];
 }
+
 interface GameRoomSettingsHolderProps {
-  currentPlayer: Player | null | undefined;
+  currentPlayer: Player;
+  navigate: any;
 }
 
 const LobbyPlayerHolder = ({
@@ -29,7 +34,6 @@ const LobbyPlayerHolder = ({
   playersInLobby,
 }: LobbyPlayerHolderProps) => {
   const { server } = React.useContext(SocketContext);
-
   const eventHandler = (message: any) => {
     if (message.type === "playerJoinedGame") {
       let rnPlayers = [];
@@ -48,6 +52,7 @@ const LobbyPlayerHolder = ({
       }
     }
   };
+
   const owner = currentPlayer?.currentRoom?.roomOwner.id;
   React.useEffect(() => server?.addMessageHandler(eventHandler));
   return (
@@ -81,9 +86,50 @@ const LobbyPlayerHolder = ({
 
 const GameRoomSettingsHolder = ({
   currentPlayer,
+  navigate,
 }: GameRoomSettingsHolderProps) => {
-  const isOwner =
+  const { server } = React.useContext(SocketContext);
+  const eventHandler = (message: any) => {
+    if (message.type === "startGame") {
+      const room = ThisPlayer().currentRoom;
+      if (room !== undefined) {
+        room.playerColors = message.payload.playerColors;
+        StoreGameRoom(room);
+      }
+      navigate(`/play/${message.payload.roomId}`);
+    }
+  };
+
+  server?.addMessageHandler(eventHandler);
+
+  const isNotOwner =
     currentPlayer?.id !== currentPlayer?.currentRoom?.roomOwner.id;
+
+  const roomCode = currentPlayer?.currentRoom?.roomId || "";
+  const fullInvite = `Hey hey,
+Let's play a game of Imposter Artist online! Click on the link to join my room:
+${window.location.href}`;
+
+  const copyInviteCode = (justCode: boolean = false) => {
+    navigator.clipboard
+      .writeText(justCode ? roomCode : fullInvite)
+      .then(() =>
+        toast("Copied invite to clipboard", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        })
+      )
+      .catch((error) => {
+        console.error("Failed to copy text:", error.message);
+      });
+  };
+
   return (
     <section>
       <div
@@ -98,76 +144,60 @@ const GameRoomSettingsHolder = ({
           </h1>
           <div className="row-align">
             <DefaultButton
-              label="Copy Invite Code"
+              label="Copy Invite"
               style={{ width: "45%" }}
-              onClick={() =>
-                navigator.clipboard
-                  .writeText(
-                    `Hey hey,
-Let's play a game of Imposter Artist online! Click on the link to join my room:
-${window.location.href}`
-                  )
-                  .then(() =>
-                    toast("Copied invite to clipboard", {
-                      position: "top-right",
-                      autoClose: 5000,
-                      hideProgressBar: false,
-                      closeOnClick: true,
-                      pauseOnHover: true,
-                      draggable: true,
-                      progress: undefined,
-                      theme: "light",
-                    })
-                  )
-                  .catch((error) => {
-                    console.error("Failed to copy text:", error.message);
-                  })
-              }
+              onClick={() => copyInviteCode(false)}
             />
             <DefaultButton
               label="Start Game"
               style={{ width: "45%" }}
-              disabled={isOwner}
+              disabled={isNotOwner}
+              onClick={() => server?.startGame(currentPlayer?.currentRoom)}
             />
           </div>
           <div className="row-align">
             <DefaultInput
               label="Max players in room"
-              value="8"
+              value={`${currentPlayer.currentRoom?.settings.maxPlayersInRoom}`}
               width={"45%"}
               required={true}
             />
             <DefaultInput
               label="Max imposters in room"
-              value="1"
+              value={`${currentPlayer.currentRoom?.settings.maxImpostersInRoom}`}
               width={"45%"}
               required={true}
             />
             <DefaultInput
               label="Drawing time for each player (in seconds)"
-              value="2"
+              value={`${currentPlayer.currentRoom?.settings.drawingTime}`}
               width={"45%"}
               required={true}
             />
             <DefaultInput
               label="Number of rounds with different imposters"
-              value="5"
+              value={`${currentPlayer.currentRoom?.settings.drawingRoundsLimit}`}
               width={"45%"}
               required={true}
             />
             <SelectorInput
               label="Voting type"
-              value="Once"
+              value={`${currentPlayer.currentRoom?.settings.votingType}`}
               options={["Once", "Continued"]}
               width={"45%"}
               required={true}
             />
             <SelectorInput
               label="Room type"
-              value="Private"
+              value={`${currentPlayer.currentRoom?.settings.roomType}`}
               options={["Private", "Public"]}
               width={"45%"}
               required={true}
+            />
+            <DefaultButton
+              label={isNotOwner ? "Leave Game" : "End Game"}
+              style={{ width: "95%" }}
+              disabled={true}
             />
           </div>
         </section>
@@ -190,6 +220,12 @@ const LobbyScreen = () => {
       navigate(`/?joingame=${gameID}`);
     }
   });
+
+  if (
+    currentPlayer?.currentRoom === null ||
+    currentPlayer?.currentRoom === undefined
+  )
+    return <></>;
 
   return (
     <>
@@ -218,7 +254,10 @@ const LobbyScreen = () => {
         currentPlayer={currentPlayer}
         playersInLobby={playersInLobby}
       />
-      <GameRoomSettingsHolder currentPlayer={currentPlayer} />
+      <GameRoomSettingsHolder
+        currentPlayer={currentPlayer}
+        navigate={navigate}
+      />
     </>
   );
 };

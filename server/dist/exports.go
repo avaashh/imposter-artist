@@ -30,8 +30,9 @@ type GameRoom struct {
 	RoomOwner 		Player				`json:"roomOwner,omitempty"` // User who owns the room
 	Settings 		GameRoomSettings 	`json:"settings,omitempty"`// Settings of the game room
 	PlayersInRoom 	[]Player			`json:"playersInRoom,omitempty"` // Array of users currently in the room
-	GameState	 	string				`json:"gameState,omitempty"` // Array of users currently in the room
+	GameState	 	string				`json:"gameState,omitempty"`
 	PlayersConn		[]*websocket.Conn
+	PlayerColors 	[]string
   }
 
   type GameRoomSettings struct {

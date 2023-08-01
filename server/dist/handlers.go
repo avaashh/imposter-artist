@@ -14,7 +14,7 @@ import (
 
 func AppServer() {
 	http.HandleFunc("/ws", handleWebSocket)
-	fmt.Printf("Webserver started on port %s", ServerPort)
+	fmt.Println("Webserver started on port", ServerPort)
 	
 	err := (http.ListenAndServe(":" + ServerPort, nil))
 	if err != nil {
@@ -50,7 +50,7 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 
 	switch res.Type {
 	case web.ActionCreateGame:
-		// Create a Game, payload.gameRoom should be interface GameRoom
+		// Create a Game, payload should be interface GameRoom
 
 		var gameRoom GameRoom
 
@@ -126,7 +126,7 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 		byteReturn, _ := json.Marshal(res)
 
 		for _, c := range roomInfo.PlayersConn {
-			if  c != conn {
+			if c != conn {
 				c.WriteMessage(messageType, byteReturn)
 			}
 		}
@@ -135,6 +135,40 @@ func handleIncomingRequest(req Request, conn *websocket.Conn, messageType int) R
 		response["gameRoom"] = roomInfo
 		return res
 		
+	case web.ActionStartGame:
+		// payload: interface{} = {roomId: gameRoomId}
+
+		room, err := database.Fetch("gamerooms", payload["roomId"].(string))
+		if err != nil {
+			response["err"] = "Could not find game room"
+			return res
+		}
+
+		gameRoom := room.(GameRoom)
+		gameRoom.GameState = "inProgress"
+
+		playerColors, err := database.Colors(0, len(gameRoom.PlayersInRoom))
+		if err != nil {
+			response["err"] = "Too many players in room"
+			return res
+		}
+
+		gameRoom.PlayerColors = playerColors
+		database.Store("gamerooms", gameRoom.RoomId, gameRoom, true)
+
+		response["success"] = true
+		response["roomId"] = gameRoom.RoomId
+		response["playerColors"] = playerColors
+		byteReturn, _ := json.Marshal(res)
+
+
+		for _, c := range gameRoom.PlayersConn {
+			if c != conn {
+				c.WriteMessage(messageType, byteReturn)
+			}
+		}
+		return res
+
 	default:
 		response["err"] = "Could not understand request"
 		return res

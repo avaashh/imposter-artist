@@ -1,4 +1,5 @@
 import { Player } from "./User";
+import { ColorHex } from "react-countdown-circle-timer";
 
 // Interface representing a GameRoom
 interface GameRoom {
@@ -7,6 +8,7 @@ interface GameRoom {
   settings: GameRoomSettings; // Settings of the game room
   playersInRoom: Player[]; // Array of users currently in the room
   gameState: "waiting" | "inProgress";
+  playerColors?: ColorHex[];
 }
 
 // Interface representing the settings of a GameRoom
