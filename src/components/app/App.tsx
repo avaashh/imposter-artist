@@ -21,39 +21,38 @@ import { handleIncomingMessages } from "../../assets/dist/contact";
 
 const App = () => {
   const [socket, setSocket] = React.useState<Server | null>(null);
-  const [loadComplete, setLoadComplete] = React.useState(false);
-
   const [socketConnected, setSocketConnected] = React.useState(false);
 
   const navigate = useNavigate();
-  const onSocketMessageHandler = (received: any) =>
-    handleIncomingMessages(received, navigate, toast);
-
-  window.onbeforeunload = () => {
-    storage.StoreGameRoom(null);
-  };
+  const navigateRef = React.useRef(navigate);
+  navigateRef.current = navigate;
 
   React.useEffect(() => {
-    const load = async () => {
-      const player = storage.ThisPlayer();
-      storage.StorePlayer(player);
-    };
+    const player = storage.ThisPlayer();
+    storage.StorePlayer(player);
 
-    load()
-      .then(
-        () =>
-          socket === null &&
-          setSocket(
-            new Server(onSocketMessageHandler, () => setSocketConnected(true))
-          )
-      )
-      .then(() => setLoadComplete(true));
-  });
+    const s = new Server(
+      (message) =>
+        handleIncomingMessages(message, navigateRef.current, toast),
+      () => setSocketConnected(true)
+    );
+    setSocket(s);
+
+    const handleBeforeUnload = () => {
+      storage.StoreGameRoom(null);
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      s.close();
+    };
+  }, []);
 
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        {loadComplete && socketConnected ? (
+        {socket !== null && socketConnected ? (
           <SocketContext.Provider value={{ server: socket }}>
             <Outlet />
           </SocketContext.Provider>

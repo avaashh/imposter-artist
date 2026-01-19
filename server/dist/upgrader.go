@@ -4,17 +4,72 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"imposterArtist/types"
 
 	"github.com/gorilla/websocket"
 )
 
+// allowedOriginsFromEnv parses ALLOWED_ORIGINS (comma-separated) from the
+// environment and falls back to a permissive dev default when unset.
+func allowedOriginsFromEnv() []string {
+	raw := os.Getenv("ALLOWED_ORIGINS")
+	if strings.TrimSpace(raw) == "" {
+		return []string{
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+		}
+	}
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		out = append(out, p)
+	}
+	return out
+}
+
+var allowedOrigins = allowedOriginsFromEnv()
+
+// allowAnyOrigin lets operators explicitly opt into a fully-open upgrader
+// (e.g. for local ngrok testing) by setting ALLOWED_ORIGINS=*.
+func allowAnyOrigin() bool {
+	for _, o := range allowedOrigins {
+		if o == "*" {
+			return true
+		}
+	}
+	return false
+}
+
+func isAllowedOrigin(origin string) bool {
+	if origin == "" {
+		// Same-origin browsers (and non-browser clients) may omit Origin;
+		// allow only when running in dev mode.
+		return allowAnyOrigin()
+	}
+	if allowAnyOrigin() {
+		return true
+	}
+	for _, o := range allowedOrigins {
+		if strings.EqualFold(o, origin) {
+			return true
+		}
+	}
+	return false
+}
+
 var Upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		// Allowing connections only from "https" URLs
-		return true // r.URL.Scheme == "https"
+		return isAllowedOrigin(r.Header.Get("Origin"))
 	},
+	ReadBufferSize:  4096,
+	WriteBufferSize: 4096,
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +81,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer conn.Close()
+	defer handleDisconnect(conn)
 
 	for {
 		// Read message from the client
@@ -41,7 +97,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// Failed to unmarshal JSON
 			log.Println("Failed to unmarshal JSON:", err)
-			break
+			continue
 		}
 
 		responseToReturn := handleIncomingRequest(receivedQuery, conn, messageType)
@@ -51,7 +107,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// Failed to marshal JSON
 			log.Println("Failed to marshal JSON:", err)
-			break
+			continue
 		}
 
 		// Write the JSON response back to the client

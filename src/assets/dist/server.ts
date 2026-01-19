@@ -1,12 +1,27 @@
 import * as React from "react";
 
-import { GameRoom } from "../../types/Room";
+import { GameRoom, GameRoomSettings } from "../../types/Room";
 import { v4 as uuidv4 } from "uuid";
 import { Player } from "../../types/User";
 import { Stroke } from "../../types/Drawing";
 
-// const endPoint = "localhost:8000";
-const endPoint = "e671-2404-7c00-48-38e0-fdf1-7f02-3107-8074.ngrok-free.app";
+type MessageHandler = (m: any) => void;
+
+const resolveWsUrl = (): string => {
+  const override = process.env.REACT_APP_WS_URL;
+  if (override) return override;
+
+  if (typeof window !== "undefined" && window.location) {
+    const { protocol, hostname, port } = window.location;
+    const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+    // Dev convenience: React dev server on :3000 → Go server on :8000
+    const wsPort = port === "3000" || port === "" ? "8000" : port;
+    const hostPart = wsPort ? `${hostname}:${wsPort}` : hostname;
+    return `${wsProtocol}//${hostPart}/ws`;
+  }
+
+  return "ws://localhost:8000/ws";
+};
 
 interface ServerProps {
   server: Server | null;
@@ -17,77 +32,87 @@ export const SocketContext = React.createContext<ServerProps>({
 });
 
 export default class Server {
-  // Properties
   socket: WebSocket;
-  messageHandlers: ((m: any) => void)[];
+  private messageHandlers: MessageHandler[];
+  private closedByClient = false;
 
-  // Constructor
-  constructor(onMessage: (m: any) => void, onConnect: () => void) {
-    this.socket = new WebSocket(`ws://${endPoint}/ws`);
+  constructor(onMessage: MessageHandler, onConnect: () => void) {
+    this.socket = new WebSocket(resolveWsUrl());
     this.socket.onopen = onConnect;
 
     this.messageHandlers = [onMessage];
 
-    this.socket.onmessage = (m) =>
-      this.messageHandlers.forEach((h) => h(JSON.parse(m.data)));
-    this.socket.onclose = console.log;
-    this.socket.onerror = () => window.location.replace("");
+    this.socket.onmessage = (m) => {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(m.data);
+      } catch (e) {
+        console.warn("Server sent non-JSON payload", e);
+        return;
+      }
+      // iterate a snapshot so handlers that unsubscribe mid-dispatch don't trip us
+      [...this.messageHandlers].forEach((h) => h(parsed));
+    };
+
+    this.socket.onclose = () => {
+      if (!this.closedByClient) console.log("WebSocket closed by server");
+    };
+    this.socket.onerror = (e) => {
+      console.warn("WebSocket error", e);
+    };
   }
 
-  // Methods
-  getSocket = () => {
-    return this.socket;
+  getSocket = () => this.socket;
+
+  addMessageHandler = (handler: MessageHandler): (() => void) => {
+    this.messageHandlers.push(handler);
+    return () => {
+      this.messageHandlers = this.messageHandlers.filter((h) => h !== handler);
+    };
   };
 
-  addMessageHandler = (handler: (m: any) => void) => {
-    if (!this.messageHandlers.includes(handler))
-      this.messageHandlers.push(handler);
+  close = () => {
+    this.closedByClient = true;
+    if (
+      this.socket.readyState === WebSocket.OPEN ||
+      this.socket.readyState === WebSocket.CONNECTING
+    ) {
+      this.socket.close();
+    }
   };
 
-  createGameRoom = (gameRoom: GameRoom) => {
+  private send = (type: string, payload: unknown) => {
+    if (this.socket.readyState !== WebSocket.OPEN) return;
     this.socket.send(
-      JSON.stringify({
-        id: `request-${uuidv4()}`,
-        type: "createGame",
-        payload: gameRoom,
-      })
+      JSON.stringify({ id: `request-${uuidv4()}`, type, payload })
     );
   };
 
-  postStrokeToServer = (user: Player, stroke: Stroke) => {
-    this.socket.send(
-      JSON.stringify({
-        id: `request-${uuidv4()}`,
-        type: "sendStroke",
-        payload: {
-          stroke: stroke,
-          roomId: user.currentRoom?.roomId,
-        },
-      })
-    );
-  };
+  createGameRoom = (gameRoom: GameRoom) => this.send("createGame", gameRoom);
 
-  joinRoomWithCode = (gameRoomId: string, player: Player) => {
-    this.socket.send(
-      JSON.stringify({
-        id: `request-${uuidv4()}`,
-        type: "joinGameWithCode",
-        payload: {
-          gameRoomId: gameRoomId,
-          player: player,
-        },
-      })
-    );
-  };
+  postStrokeToServer = (user: Player, stroke: Stroke) =>
+    this.send("sendStroke", {
+      stroke,
+      roomId: user.currentRoom?.roomId,
+    });
+
+  joinRoomWithCode = (gameRoomId: string, player: Player) =>
+    this.send("joinGameWithCode", { gameRoomId, player });
+
+  leaveRoom = (roomId: string) => this.send("leaveGame", { roomId });
 
   startGame = (gameRoom: GameRoom | undefined) => {
     if (gameRoom !== undefined)
-      this.socket.send(
-        JSON.stringify({
-          id: `request-${uuidv4()}`,
-          type: "startGame",
-          payload: { roomId: gameRoom.roomId },
-        })
-      );
+      this.send("startGame", { roomId: gameRoom.roomId });
   };
+
+  endTurn = (roomId: string) => this.send("endTurn", { roomId });
+
+  sendVote = (roomId: string, votedPlayerId: string) =>
+    this.send("sendVote", { roomId, votedPlayerId });
+
+  playAgain = (roomId: string) => this.send("playAgain", { roomId });
+
+  updateSettings = (roomId: string, settings: Partial<GameRoomSettings>) =>
+    this.send("updateGameSettings", { roomId, settings });
 }

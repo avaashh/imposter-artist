@@ -100,7 +100,11 @@ const GameRoomSettingsHolder = ({
     }
   };
 
-  server?.addMessageHandler(eventHandler);
+  React.useEffect(() => {
+    if (!server) return;
+    return server.addMessageHandler(eventHandler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [server]);
 
   const isNotOwner =
     currentPlayer?.id !== currentPlayer?.currentRoom?.roomOwner.id;

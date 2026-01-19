@@ -3,9 +3,8 @@ node_modules/
 /server/bin/
 /server/imposterArtist
 
-# build output
-build/
-dist/
+# build output (note: /server/dist and /src/assets/dist are source, not build output)
+/build/
 coverage/
 
 # environment

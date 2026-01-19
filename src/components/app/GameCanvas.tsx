@@ -137,18 +137,20 @@ const GameCanvas: React.FC = () => {
       ]
     : "#000";
 
-  const [addedStroke, setAddedStroke] = React.useState<Array<Point>>([
-    { x: 0, y: 0, color: drawingBoardColor },
-  ]);
+  const [addedStroke, setAddedStroke] = React.useState<Array<Point> | null>(
+    null
+  );
 
-  const handleIncomingStroke = (message: any) => {
-    if (message.type === "sendStroke" && message.payload.success) {
-      if (message.payload.sentStroke !== null)
-        setAddedStroke(message.payload.sentStroke);
-    }
-  };
-
-  server?.addMessageHandler(handleIncomingStroke);
+  React.useEffect(() => {
+    if (!server) return;
+    return server.addMessageHandler((message: any) => {
+      if (message.type === "sendStroke" && message.payload.success) {
+        if (message.payload.sentStroke) {
+          setAddedStroke(message.payload.sentStroke);
+        }
+      }
+    });
+  }, [server]);
 
   if (server === null) return <></>;
   if (currentGame === undefined || currentGame === null) return <></>;

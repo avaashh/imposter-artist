@@ -17,7 +17,8 @@ interface CanvasProps {
   drawingEnabled: boolean;
   setDrawingEnabled: (v: boolean) => void;
   server: Server;
-  addedStroke: Stroke;
+  addedStroke: Stroke | null;
+  clearSignal?: number;
 }
 
 const Canvas: React.FC<CanvasProps> = ({
@@ -30,12 +31,13 @@ const Canvas: React.FC<CanvasProps> = ({
   setDrawingEnabled,
   server,
   addedStroke,
+  clearSignal,
 }) => {
   const pointNormalizer: number = 100 / size;
 
-  const [update, setUpdate] = React.useState<number>(0);
   const [lines, setLines] = React.useState<Point[][]>([]);
   const prevPos = React.useRef<Point | null>(null);
+  const pendingSend = React.useRef<boolean>(false);
 
   const handleMouseDown = (e: any) => {
     if (!drawingEnabled) return;
@@ -43,8 +45,8 @@ const Canvas: React.FC<CanvasProps> = ({
     setIsDrawing(true);
     const pos = e.target.getStage().getPointerPosition();
     if (pos) {
-      setLines([
-        ...lines,
+      setLines((prev) => [
+        ...prev,
         [
           {
             x: pos.x * pointNormalizer,
@@ -60,44 +62,54 @@ const Canvas: React.FC<CanvasProps> = ({
     if (!isDrawing || !drawingEnabled) return;
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
-    if (point) {
-      const { x, y } = point;
-      if (prevPos.current) {
-        const newLine = [...lines[lines.length - 1]];
+    if (!point) return;
+    const { x, y } = point;
+    const x_pos = x * pointNormalizer;
+    const y_pos = y * pointNormalizer;
 
-        const x_pos = x * pointNormalizer;
-        const y_pos = y * pointNormalizer;
-
-        newLine.push({ x: x_pos, y: y_pos, color: drawColor });
-
-        const newLines = [...lines];
-        newLines[lines.length - 1] = newLine;
-        setLines(newLines);
-      }
-      prevPos.current = {
-        x: x * pointNormalizer,
-        y: y * pointNormalizer,
-        color: drawColor,
-      };
+    if (prevPos.current) {
+      setLines((prev) => {
+        if (prev.length === 0) return prev;
+        const updated = prev.slice(0, -1);
+        const last = [...prev[prev.length - 1]];
+        last.push({ x: x_pos, y: y_pos, color: drawColor });
+        return [...updated, last];
+      });
     }
+    prevPos.current = { x: x_pos, y: y_pos, color: drawColor };
   };
 
   const handleMouseUp = () => {
-    setDrawingEnabled(false);
     setIsDrawing(false);
+    setDrawingEnabled(false);
     prevPos.current = null;
-    setUpdate(update + 1);
+    pendingSend.current = true;
   };
 
+  // When a stroke settles into `lines`, send it once.
   React.useEffect(() => {
-    if (update !== 0)
-      server.postStrokeToServer(player, lines[lines.length - 1]);
-  }, [update]);
+    if (!pendingSend.current) return;
+    if (lines.length === 0) return;
+    const lastLine = lines[lines.length - 1];
+    if (lastLine.length < 2) {
+      pendingSend.current = false;
+      return;
+    }
+    server.postStrokeToServer(player, lastLine);
+    pendingSend.current = false;
+  }, [lines, server, player]);
 
+  // Accept strokes from other players.
   React.useEffect(() => {
-    let currLines = [...lines];
-    setLines(currLines.concat([addedStroke]));
+    if (!addedStroke || addedStroke.length === 0) return;
+    setLines((prev) => [...prev, addedStroke]);
   }, [addedStroke]);
+
+  // Clear the canvas when a new round/turn says so.
+  React.useEffect(() => {
+    if (clearSignal === undefined) return;
+    setLines([]);
+  }, [clearSignal]);
 
   return (
     <Stage
@@ -110,8 +122,9 @@ const Canvas: React.FC<CanvasProps> = ({
       onTouchmove={handleMouseMove}
       onTouchend={handleMouseUp}
       style={{
-        position: "fixed",
         backgroundColor: "#fff",
+        cursor: drawingEnabled ? "crosshair" : "not-allowed",
+        borderRadius: 12,
       }}
     >
       <Layer>
