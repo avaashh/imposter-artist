@@ -9,10 +9,6 @@ import { SmallCharacterTag } from "../CharacterTag";
 import { useNavigate, useParams } from "react-router-dom";
 import { SocketContext } from "../../assets/dist/server";
 import { Player } from "../../types/User";
-import {
-  StoreGameRoom,
-  ThisPlayer,
-} from "../../utils/storage/storage-container";
 import { SmallLogoHeader } from "../Logo";
 import { DefaultButton } from "../Buttons";
 import DefaultInput, { SelectorInput } from "../Inputs";
@@ -33,28 +29,7 @@ const LobbyPlayerHolder = ({
   currentPlayer,
   playersInLobby,
 }: LobbyPlayerHolderProps) => {
-  const { server } = React.useContext(SocketContext);
-  const eventHandler = (message: any) => {
-    if (message.type === "playerJoinedGame") {
-      let rnPlayers = [];
-      if (playersInLobby !== undefined)
-        playersInLobby?.forEach((player) => rnPlayers.push(player));
-      rnPlayers.push(message.payload.player);
-
-      if (
-        currentPlayer !== undefined &&
-        currentPlayer !== null &&
-        currentPlayer.currentRoom !== undefined &&
-        currentPlayer.currentRoom !== null
-      ) {
-        currentPlayer.currentRoom.playersInRoom = rnPlayers;
-        StoreGameRoom(currentPlayer.currentRoom);
-      }
-    }
-  };
-
   const owner = currentPlayer?.currentRoom?.roomOwner.id;
-  React.useEffect(() => server?.addMessageHandler(eventHandler));
   return (
     <section style={{ display: "flex", justifyContent: "center" }}>
       <div className="player-holder-container">
@@ -89,22 +64,6 @@ const GameRoomSettingsHolder = ({
   navigate,
 }: GameRoomSettingsHolderProps) => {
   const { server } = React.useContext(SocketContext);
-  const eventHandler = (message: any) => {
-    if (message.type === "startGame") {
-      const room = ThisPlayer().currentRoom;
-      if (room !== undefined) {
-        room.playerColors = message.payload.playerColors;
-        StoreGameRoom(room);
-      }
-      navigate(`/play/${message.payload.roomId}`);
-    }
-  };
-
-  React.useEffect(() => {
-    if (!server) return;
-    return server.addMessageHandler(eventHandler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server]);
 
   const isNotOwner =
     currentPlayer?.id !== currentPlayer?.currentRoom?.roomOwner.id;

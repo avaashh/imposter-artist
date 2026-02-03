@@ -1,8 +1,6 @@
-// Redux files
 import { store } from "./store";
 import * as actionTypes from "./redux-actions";
 
-// Modules
 import {
   defaultCharacter,
   defaultPlayer,
@@ -10,7 +8,13 @@ import {
   newPlayerName,
 } from "../defaultCreate";
 import { Player } from "../../types/User";
-import { GameRoom } from "../../types/Room";
+import {
+  GameResult,
+  GameRoom,
+  Phase,
+  RoleAssignment,
+  TurnState,
+} from "../../types/Room";
 
 export const StorePlayer = (player: Player) =>
   store.dispatch({
@@ -38,6 +42,21 @@ export const UpdateName = (newName: string) =>
     type: actionTypes.playerUsernameChanged,
     payload: { playerName: newName },
   });
+
+export const StoreRole = (role: RoleAssignment | null) =>
+  store.dispatch({ type: actionTypes.setRole, payload: role });
+
+export const StoreTurn = (turn: TurnState | null) =>
+  store.dispatch({ type: actionTypes.setTurn, payload: turn });
+
+export const StorePhase = (phase: Phase | null) =>
+  store.dispatch({ type: actionTypes.setPhase, payload: phase });
+
+export const StoreGameResult = (result: GameResult | null) =>
+  store.dispatch({ type: actionTypes.setGameResult, payload: result });
+
+export const ResetGameMeta = () =>
+  store.dispatch({ type: actionTypes.resetGameMeta });
 
 export const ThisPlayer = () => {
   const player = store.getState().player;

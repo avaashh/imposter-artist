@@ -2,89 +2,233 @@ package dist
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 
-	"imposterArtist/serverhandlers"
+	"imposterArtist/game"
 	"imposterArtist/types"
 	"imposterArtist/web"
 
 	"github.com/gorilla/websocket"
 )
 
+// AppServer starts the HTTP + WebSocket server. Blocking; exits the process
+// on a fatal listen error.
 func AppServer() {
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
 	http.HandleFunc("/ws", handleWebSocket)
 	fmt.Println("Webserver started on port", types.ServerPort)
-	
-	err := (http.ListenAndServe(":" + types.ServerPort, nil))
-	if err != nil {
+
+	if err := http.ListenAndServe(":"+types.ServerPort, nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// errResponse builds the canonical shape for failure payloads so the client
+// can display a toast without having to guess fields.
+func errResponse(req types.Request, err error) types.Response {
+	return types.Response{
+		ID:   req.ID,
+		Type: req.Type,
+		Payload: map[string]interface{}{
+			"success": false,
+			"err":     err.Error(),
+		},
+	}
+}
+
+func okResponse(req types.Request, payload map[string]interface{}) types.Response {
+	if payload == nil {
+		payload = map[string]interface{}{}
+	}
+	payload["success"] = true
+	return types.Response{
+		ID:      req.ID,
+		Type:    req.Type,
+		Payload: payload,
+	}
+}
+
 func handleIncomingRequest(req types.Request, conn *websocket.Conn, messageType int) types.Response {
-	var res types.Response
-
-	res.ID = req.ID
-	res.Type = req.Type
-	res.Payload = map[string]interface{} {"success": false}
-
-	response, ok := res.Payload.(map[string]interface{})
-	if !ok {
-		response["err"] = "Could not form response"
-		return res
-	}
-
 	payload, ok := req.Payload.(map[string]interface{})
-	if !ok {
-		response["err"] = "Could not understand payload"
-		return res
+	if !ok && req.Type != web.ActionCreateGame {
+		return errResponse(req, errors.New("could not understand payload"))
 	}
 
-	// map payload to bytes
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		response["err"] = err
-		return res
-	}
-
-	switch res.Type {
+	switch req.Type {
 	case web.ActionCreateGame:
-		return serverhandlers.HandleCreateAGame(
-			payloadBytes, response, res, conn,
-		)
-	
+		return handleCreate(req, conn)
 	case web.ActionJoinGameWithCode:
-		return serverhandlers.HandleJoinRoomWithCode(
-			payload, conn, messageType, response, res,
-		)
-		
+		return handleJoin(req, payload, conn)
 	case web.ActionStartGame:
-		// payload: interface{} = {roomId: gameRoomId}
-		return serverhandlers.HandleStartGame(
-			payload["roomId"].(string),
-			conn, messageType, response, res,
-		)
-
+		return handleStart(req, conn)
 	case web.ActionSendStroke:
-		strokeData, ok := payload["stroke"].([]interface{})
-		if !ok {
-			response["err"] = "Could not understand request"
-			return res
-		}
-		
-		return serverhandlers.HandleIncomingStrokes(
-			payload["roomId"].(string),
-			strokeData,
-			conn,
-			messageType,
-			response,
-			res,
-		)
-
+		return handleStroke(req, payload, conn, messageType)
+	case web.ActionLeaveGame:
+		return handleLeave(req, conn)
+	case web.ActionEndTurn:
+		return handleEndTurn(req, conn)
+	case web.ActionSendVote:
+		return handleVote(req, payload, conn)
+	case web.ActionPlayAgain:
+		return handlePlayAgain(req, conn)
+	case web.ActionUpdateGameSettings:
+		return handleUpdateSettings(req, payload, conn)
 	default:
-		response["err"] = "Could not understand request"
-		return res
+		return errResponse(req, fmt.Errorf("unknown action: %s", req.Type))
 	}
+}
+
+func handleCreate(req types.Request, conn *websocket.Conn) types.Response {
+	raw, err := json.Marshal(req.Payload)
+	if err != nil {
+		return errResponse(req, errors.New("could not understand request"))
+	}
+	var incoming types.GameRoom
+	if err := json.Unmarshal(raw, &incoming); err != nil {
+		return errResponse(req, errors.New("could not understand request"))
+	}
+	if incoming.RoomId == "" || incoming.RoomOwner.Id == "" {
+		return errResponse(req, errors.New("roomId and owner are required"))
+	}
+
+	r, err := game.Default.CreateRoom(incoming.RoomOwner, incoming.Settings, incoming.RoomId, conn)
+	if err != nil {
+		return errResponse(req, err)
+	}
+	snap := r.Snapshot()
+	return okResponse(req, map[string]interface{}{
+		"gameRoom": snap,
+	})
+}
+
+func handleJoin(req types.Request, payload map[string]interface{}, conn *websocket.Conn) types.Response {
+	roomId, _ := payload["gameRoomId"].(string)
+	if roomId == "" {
+		return errResponse(req, errors.New("missing room code"))
+	}
+	rawPlayer, err := json.Marshal(payload["player"])
+	if err != nil {
+		return errResponse(req, errors.New("could not understand player"))
+	}
+	var p types.Player
+	if err := json.Unmarshal(rawPlayer, &p); err != nil || p.Id == "" {
+		return errResponse(req, errors.New("could not understand player"))
+	}
+
+	r, err := game.Default.JoinRoom(roomId, p, conn)
+	if err != nil {
+		return errResponse(req, err)
+	}
+	snap := r.Snapshot()
+
+	// Fan out a playerJoined event to everyone already in the room so their
+	// lobbies update in real time.
+	othersConns := r.OtherConns(conn)
+	for _, c := range othersConns {
+		msg := types.Response{
+			Type: "playerJoinedGame",
+			Payload: map[string]interface{}{
+				"success":  true,
+				"roomId":   snap.RoomId,
+				"player":   p,
+				"gameRoom": snap,
+			},
+		}
+		data, _ := json.Marshal(msg)
+		_ = c.WriteMessage(websocket.TextMessage, data)
+	}
+
+	return okResponse(req, map[string]interface{}{
+		"gameRoom": snap,
+		"player":   p,
+	})
+}
+
+func handleStart(req types.Request, conn *websocket.Conn) types.Response {
+	if err := game.Default.StartGame(conn); err != nil {
+		return errResponse(req, err)
+	}
+	return okResponse(req, nil)
+}
+
+func handleStroke(req types.Request, payload map[string]interface{}, conn *websocket.Conn, messageType int) types.Response {
+	strokeData, ok := payload["stroke"].([]interface{})
+	if !ok {
+		return errResponse(req, errors.New("could not understand stroke"))
+	}
+	stroke, err := parseStroke(strokeData)
+	if err != nil {
+		return errResponse(req, err)
+	}
+
+	r, conns, ok := game.Default.AcceptStroke(conn, strokeData)
+	if !ok || r == nil {
+		return errResponse(req, errors.New("stroke rejected"))
+	}
+
+	out := types.Response{
+		Type: "sendStroke",
+		Payload: map[string]interface{}{
+			"success":    true,
+			"roomId":     r.RoomId,
+			"sentStroke": stroke,
+		},
+	}
+	data, _ := json.Marshal(out)
+	for _, c := range conns {
+		if c == nil || c == conn {
+			continue
+		}
+		_ = c.WriteMessage(messageType, data)
+	}
+	return okResponse(req, map[string]interface{}{
+		"roomId":     r.RoomId,
+		"sentStroke": nil,
+	})
+}
+
+// Placeholder handlers for actions that land in later P2 commits; they
+// reply with a friendly error so the frontend can stay unblocked.
+func handleLeave(req types.Request, _ *websocket.Conn) types.Response {
+	return errResponse(req, errors.New("leave is not wired up yet"))
+}
+
+func handleEndTurn(req types.Request, _ *websocket.Conn) types.Response {
+	return errResponse(req, errors.New("endTurn is not wired up yet"))
+}
+
+func handleVote(req types.Request, _ map[string]interface{}, _ *websocket.Conn) types.Response {
+	return errResponse(req, errors.New("vote is not wired up yet"))
+}
+
+func handlePlayAgain(req types.Request, _ *websocket.Conn) types.Response {
+	return errResponse(req, errors.New("playAgain is not wired up yet"))
+}
+
+func handleUpdateSettings(req types.Request, _ map[string]interface{}, _ *websocket.Conn) types.Response {
+	return errResponse(req, errors.New("updateGameSettings is not wired up yet"))
+}
+
+func parseStroke(raw []interface{}) (types.Stroke, error) {
+	stroke := make(types.Stroke, 0, len(raw))
+	for _, pointData := range raw {
+		pointMap, ok := pointData.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("invalid stroke data format")
+		}
+		x, xOk := pointMap["x"].(float64)
+		y, yOk := pointMap["y"].(float64)
+		color, colorOk := pointMap["color"].(string)
+		if !xOk || !yOk || !colorOk {
+			return nil, errors.New("invalid stroke data format")
+		}
+		stroke = append(stroke, types.Point{X: x, Y: y, Color: color})
+	}
+	return stroke, nil
 }

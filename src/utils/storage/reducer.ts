@@ -1,20 +1,13 @@
 import { Player } from "../../types/User";
+import { GameResult, Phase, RoleAssignment, TurnState } from "../../types/Room";
 import * as actionTypes from "./redux-actions";
-
-/*
-    Storage = {
-        // User Details
-        player: {
-            id: string; // Unique ID of the Player
-            playerName: string; // Name of the Player
-            character: Character; // Player's default character
-            currentRoom?: GameRoom | null; // Current room player is playing in - can be null when not playing
-        }
-    }
-*/
 
 export interface ReduxState {
   player?: Player | null;
+  role?: RoleAssignment | null;
+  turn?: TurnState | null;
+  phase?: Phase | null;
+  result?: GameResult | null;
 }
 
 export interface ReduxAction {
@@ -55,6 +48,27 @@ const reducer = (state: ReduxState = {}, action: ReduxAction): ReduxState => {
           player: { ...state.player, currentRoom: action.payload },
         };
       return state;
+
+    case actionTypes.setRole:
+      return { ...state, role: action.payload };
+
+    case actionTypes.setTurn:
+      return { ...state, turn: action.payload };
+
+    case actionTypes.setPhase:
+      return { ...state, phase: action.payload };
+
+    case actionTypes.setGameResult:
+      return { ...state, result: action.payload };
+
+    case actionTypes.resetGameMeta:
+      return {
+        ...state,
+        role: null,
+        turn: null,
+        phase: null,
+        result: null,
+      };
 
     default:
       return state;
