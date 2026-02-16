@@ -199,8 +199,11 @@ func handleLeave(req types.Request, _ *websocket.Conn) types.Response {
 	return errResponse(req, errors.New("leave is not wired up yet"))
 }
 
-func handleEndTurn(req types.Request, _ *websocket.Conn) types.Response {
-	return errResponse(req, errors.New("endTurn is not wired up yet"))
+func handleEndTurn(req types.Request, conn *websocket.Conn) types.Response {
+	if err := game.Default.EndTurnByConn(conn); err != nil {
+		return errResponse(req, err)
+	}
+	return okResponse(req, nil)
 }
 
 func handleVote(req types.Request, _ map[string]interface{}, _ *websocket.Conn) types.Response {
