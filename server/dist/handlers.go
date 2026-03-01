@@ -157,7 +157,7 @@ func handleStart(req types.Request, conn *websocket.Conn) types.Response {
 	return okResponse(req, nil)
 }
 
-func handleStroke(req types.Request, payload map[string]interface{}, conn *websocket.Conn, messageType int) types.Response {
+func handleStroke(req types.Request, payload map[string]interface{}, conn *websocket.Conn, _ int) types.Response {
 	strokeData, ok := payload["stroke"].([]interface{})
 	if !ok {
 		return errResponse(req, errors.New("could not understand stroke"))
@@ -167,30 +167,10 @@ func handleStroke(req types.Request, payload map[string]interface{}, conn *webso
 		return errResponse(req, err)
 	}
 
-	r, conns, ok := game.Default.AcceptStroke(conn, strokeData)
-	if !ok || r == nil {
-		return errResponse(req, errors.New("stroke rejected"))
+	if err := game.Default.AcceptStroke(conn, stroke); err != nil {
+		return errResponse(req, err)
 	}
-
-	out := types.Response{
-		Type: "sendStroke",
-		Payload: map[string]interface{}{
-			"success":    true,
-			"roomId":     r.RoomId,
-			"sentStroke": stroke,
-		},
-	}
-	data, _ := json.Marshal(out)
-	for _, c := range conns {
-		if c == nil || c == conn {
-			continue
-		}
-		_ = c.WriteMessage(messageType, data)
-	}
-	return okResponse(req, map[string]interface{}{
-		"roomId":     r.RoomId,
-		"sentStroke": nil,
-	})
+	return okResponse(req, nil)
 }
 
 // Placeholder handlers for actions that land in later P2 commits; they
@@ -206,12 +186,22 @@ func handleEndTurn(req types.Request, conn *websocket.Conn) types.Response {
 	return okResponse(req, nil)
 }
 
-func handleVote(req types.Request, _ map[string]interface{}, _ *websocket.Conn) types.Response {
-	return errResponse(req, errors.New("vote is not wired up yet"))
+func handleVote(req types.Request, payload map[string]interface{}, conn *websocket.Conn) types.Response {
+	target, _ := payload["votedPlayerId"].(string)
+	if target == "" {
+		return errResponse(req, errors.New("missing votedPlayerId"))
+	}
+	if err := game.Default.SubmitVote(conn, target); err != nil {
+		return errResponse(req, err)
+	}
+	return okResponse(req, nil)
 }
 
-func handlePlayAgain(req types.Request, _ *websocket.Conn) types.Response {
-	return errResponse(req, errors.New("playAgain is not wired up yet"))
+func handlePlayAgain(req types.Request, conn *websocket.Conn) types.Response {
+	if err := game.Default.PlayAgain(conn); err != nil {
+		return errResponse(req, err)
+	}
+	return okResponse(req, nil)
 }
 
 func handleUpdateSettings(req types.Request, _ map[string]interface{}, _ *websocket.Conn) types.Response {

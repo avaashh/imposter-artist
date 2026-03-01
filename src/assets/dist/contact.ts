@@ -5,6 +5,7 @@ import {
   StorePhase,
   StoreRole,
   StoreTurn,
+  StoreVotingProgress,
   ThisPlayer,
 } from "../../utils/storage/storage-container";
 
@@ -128,6 +129,21 @@ export const handleIncomingMessages = (
 
     case "votingStarted": {
       StorePhase("voting");
+      StoreVotingProgress({
+        votedPlayerIds: [],
+        totalVotes: 0,
+        totalPlayers: payload?.totalPlayers ?? 0,
+      });
+      return;
+    }
+
+    case "votingUpdate": {
+      if (!payload?.success) return;
+      StoreVotingProgress({
+        votedPlayerIds: payload.votedPlayerIds ?? [],
+        totalVotes: payload.totalVotes ?? 0,
+        totalPlayers: payload.totalPlayers ?? 0,
+      });
       return;
     }
 

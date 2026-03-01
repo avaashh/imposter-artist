@@ -143,23 +143,53 @@ func (m *Manager) EndTurnByConn(conn *websocket.Conn) error {
 	return nil
 }
 
-// AcceptStroke authorizes and relays a stroke. Only the current-turn player
-// may draw; everyone else's strokes are dropped so a client bug or a
-// malicious peer can't paint on someone else's canvas.
-func (m *Manager) AcceptStroke(conn *websocket.Conn, _ []interface{}) (*Room, []*websocket.Conn, bool) {
+// AcceptStroke authorizes a stroke, relays it to every other player, and —
+// because one stroke per turn is the Imposter Artist rule — auto-advances
+// the turn. Only the current drawer may submit strokes; everyone else is
+// rejected so a client bug or malicious peer can't paint on their behalf.
+func (m *Manager) AcceptStroke(conn *websocket.Conn, stroke types.Stroke) error {
 	r, _ := m.FindByConn(conn)
 	if r == nil {
-		return nil, nil, false
+		return errNotInRoom
 	}
+
 	r.mu.Lock()
-	defer r.mu.Unlock()
 	if r.Phase != PhaseInProgress {
-		return r, nil, false
+		r.mu.Unlock()
+		return errWrongPhase
 	}
 	idx := r.playerIndexByConn(conn)
-	if idx < 0 || idx != r.TurnIndex {
-		return r, nil, false
+	if idx < 0 {
+		r.mu.Unlock()
+		return errNotInRoom
 	}
-	conns := append([]*websocket.Conn(nil), r.Conns...)
-	return r, conns, true
+	if idx != r.TurnIndex {
+		r.mu.Unlock()
+		return errNotYourTurn
+	}
+
+	drawerId := r.Players[idx].Id
+	roomId := r.RoomId
+	others := make([]*websocket.Conn, 0, len(r.Conns))
+	for _, c := range r.Conns {
+		if c != nil && c != conn {
+			others = append(others, c)
+		}
+	}
+
+	r.stopTurnTimerLocked()
+	transition := r.advanceTurnLocked()
+	r.mu.Unlock()
+
+	sendTo(others, types.Response{
+		Type: "sendStroke",
+		Payload: map[string]interface{}{
+			"success":    true,
+			"roomId":     roomId,
+			"sentStroke": stroke,
+			"playerId":   drawerId,
+		},
+	})
+	broadcastTransition(transition)
+	return nil
 }

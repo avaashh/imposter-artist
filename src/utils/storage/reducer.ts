@@ -1,5 +1,11 @@
 import { Player } from "../../types/User";
-import { GameResult, Phase, RoleAssignment, TurnState } from "../../types/Room";
+import {
+  GameResult,
+  Phase,
+  RoleAssignment,
+  TurnState,
+  VotingProgress,
+} from "../../types/Room";
 import * as actionTypes from "./redux-actions";
 
 export interface ReduxState {
@@ -8,6 +14,7 @@ export interface ReduxState {
   turn?: TurnState | null;
   phase?: Phase | null;
   result?: GameResult | null;
+  voting?: VotingProgress | null;
 }
 
 export interface ReduxAction {
@@ -61,6 +68,9 @@ const reducer = (state: ReduxState = {}, action: ReduxAction): ReduxState => {
     case actionTypes.setGameResult:
       return { ...state, result: action.payload };
 
+    case actionTypes.setVotingProgress:
+      return { ...state, voting: action.payload };
+
     case actionTypes.resetGameMeta:
       return {
         ...state,
@@ -68,6 +78,7 @@ const reducer = (state: ReduxState = {}, action: ReduxAction): ReduxState => {
         turn: null,
         phase: null,
         result: null,
+        voting: null,
       };
 
     default:

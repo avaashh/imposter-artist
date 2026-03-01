@@ -14,6 +14,7 @@ import {
   Phase,
   RoleAssignment,
   TurnState,
+  VotingProgress,
 } from "../../types/Room";
 
 export const StorePlayer = (player: Player) =>
@@ -54,6 +55,9 @@ export const StorePhase = (phase: Phase | null) =>
 
 export const StoreGameResult = (result: GameResult | null) =>
   store.dispatch({ type: actionTypes.setGameResult, payload: result });
+
+export const StoreVotingProgress = (progress: VotingProgress | null) =>
+  store.dispatch({ type: actionTypes.setVotingProgress, payload: progress });
 
 export const ResetGameMeta = () =>
   store.dispatch({ type: actionTypes.resetGameMeta });

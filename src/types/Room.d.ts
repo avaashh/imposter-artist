@@ -50,3 +50,9 @@ export interface GameResult {
   secretWord: string;
   voteTally: Record<string, number>;
 }
+
+export interface VotingProgress {
+  votedPlayerIds: string[];
+  totalVotes: number;
+  totalPlayers: number;
+}
