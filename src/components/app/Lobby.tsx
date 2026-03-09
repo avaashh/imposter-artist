@@ -12,6 +12,7 @@ import { Player } from "../../types/User";
 import { SmallLogoHeader } from "../Logo";
 import { DefaultButton } from "../Buttons";
 import DefaultInput, { SelectorInput } from "../Inputs";
+import { StoreGameRoom } from "../../utils/storage/storage-container";
 
 import { ToastContainer, toast } from "react-toastify";
 
@@ -158,9 +159,14 @@ ${window.location.href}`;
               required={true}
             />
             <DefaultButton
-              label={isNotOwner ? "Leave Game" : "End Game"}
+              label="Leave Game"
               style={{ width: "95%" }}
-              disabled={true}
+              onClick={() => {
+                const roomId = currentPlayer?.currentRoom?.roomId;
+                if (roomId) server?.leaveRoom(roomId);
+                StoreGameRoom(null);
+                navigate("/");
+              }}
             />
           </div>
         </section>

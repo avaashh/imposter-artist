@@ -173,10 +173,9 @@ func handleStroke(req types.Request, payload map[string]interface{}, conn *webso
 	return okResponse(req, nil)
 }
 
-// Placeholder handlers for actions that land in later P2 commits; they
-// reply with a friendly error so the frontend can stay unblocked.
-func handleLeave(req types.Request, _ *websocket.Conn) types.Response {
-	return errResponse(req, errors.New("leave is not wired up yet"))
+func handleLeave(req types.Request, conn *websocket.Conn) types.Response {
+	game.Default.LeavePlayerByConn(conn)
+	return okResponse(req, nil)
 }
 
 func handleEndTurn(req types.Request, conn *websocket.Conn) types.Response {
