@@ -203,8 +203,19 @@ func handlePlayAgain(req types.Request, conn *websocket.Conn) types.Response {
 	return okResponse(req, nil)
 }
 
-func handleUpdateSettings(req types.Request, _ map[string]interface{}, _ *websocket.Conn) types.Response {
-	return errResponse(req, errors.New("updateGameSettings is not wired up yet"))
+func handleUpdateSettings(req types.Request, payload map[string]interface{}, conn *websocket.Conn) types.Response {
+	raw, err := json.Marshal(payload["settings"])
+	if err != nil {
+		return errResponse(req, errors.New("could not understand settings"))
+	}
+	var s types.GameRoomSettings
+	if err := json.Unmarshal(raw, &s); err != nil {
+		return errResponse(req, errors.New("could not understand settings"))
+	}
+	if err := game.Default.UpdateSettings(conn, s); err != nil {
+		return errResponse(req, err)
+	}
+	return okResponse(req, nil)
 }
 
 func parseStroke(raw []interface{}) (types.Stroke, error) {

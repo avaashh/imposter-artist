@@ -9,6 +9,7 @@ import { SmallCharacterTag } from "../CharacterTag";
 import { useNavigate, useParams } from "react-router-dom";
 import { SocketContext } from "../../assets/dist/server";
 import { Player } from "../../types/User";
+import { GameRoomSettings } from "../../types/Room";
 import { SmallLogoHeader } from "../Logo";
 import { DefaultButton } from "../Buttons";
 import DefaultInput, { SelectorInput } from "../Inputs";
@@ -66,26 +67,33 @@ const GameRoomSettingsHolder = ({
 }: GameRoomSettingsHolderProps) => {
   const { server } = React.useContext(SocketContext);
 
-  const isNotOwner =
-    currentPlayer?.id !== currentPlayer?.currentRoom?.roomOwner.id;
+  const room = currentPlayer.currentRoom;
+  const isOwner = currentPlayer?.id === room?.roomOwner.id;
+  const readOnly = !isOwner;
+  const serverSettings = room?.settings;
+  const roomId = room?.roomId || "";
+  const enoughPlayers = (room?.playersInRoom.length ?? 0) >= 3;
 
-  const roomCode = currentPlayer?.currentRoom?.roomId || "";
+  const [draft, setDraft] = React.useState<GameRoomSettings | undefined>(
+    serverSettings
+  );
+
+  const serverSettingsKey = JSON.stringify(serverSettings);
+  React.useEffect(() => {
+    if (serverSettings) setDraft(serverSettings);
+  }, [serverSettingsKey]);
+
   const fullInvite = `Hey hey,
 Let's play a game of Imposter Artist online! Click on the link to join my room:
 ${window.location.href}`;
 
   const copyInviteCode = (justCode: boolean = false) => {
     navigator.clipboard
-      .writeText(justCode ? roomCode : fullInvite)
+      .writeText(justCode ? roomId : fullInvite)
       .then(() =>
         toast("Copied invite to clipboard", {
           position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
+          autoClose: 3000,
           theme: "light",
         })
       )
@@ -93,6 +101,34 @@ ${window.location.href}`;
         console.error("Failed to copy text:", error.message);
       });
   };
+
+  const onDraftField = (key: keyof GameRoomSettings) => (v: string) => {
+    setDraft((d) => (d ? ({ ...d, [key]: v } as GameRoomSettings) : d));
+  };
+
+  const commit = (next: GameRoomSettings) => {
+    if (!isOwner || !server || !serverSettings) return;
+    if (JSON.stringify(next) === JSON.stringify(serverSettings)) return;
+    server.updateSettings(roomId, next);
+  };
+
+  const commitNumber = (key: keyof GameRoomSettings) => (v: string) => {
+    if (!draft) return;
+    const n = parseInt(v, 10);
+    if (isNaN(n)) {
+      setDraft({ ...draft, [key]: serverSettings?.[key] } as GameRoomSettings);
+      return;
+    }
+    commit({ ...draft, [key]: n } as GameRoomSettings);
+  };
+
+  const commitString = (key: keyof GameRoomSettings) => (v: string) => {
+    if (!draft) return;
+    setDraft({ ...draft, [key]: v } as GameRoomSettings);
+    commit({ ...draft, [key]: v } as GameRoomSettings);
+  };
+
+  if (!draft || !serverSettings) return <></>;
 
   return (
     <section>
@@ -115,46 +151,74 @@ ${window.location.href}`;
             <DefaultButton
               label="Start Game"
               style={{ width: "45%" }}
-              disabled={isNotOwner}
-              onClick={() => server?.startGame(currentPlayer?.currentRoom)}
+              disabled={!isOwner || !enoughPlayers}
+              onClick={() => server?.startGame(room ?? undefined)}
             />
           </div>
+          {!enoughPlayers && (
+            <p
+              className="midText"
+              style={{ textAlign: "center", margin: "8px 0" }}
+            >
+              Waiting for at least 3 players…
+            </p>
+          )}
           <div className="row-align">
             <DefaultInput
               label="Max players in room"
-              value={`${currentPlayer.currentRoom?.settings.maxPlayersInRoom}`}
+              value={`${draft.maxPlayersInRoom}`}
+              setValue={onDraftField("maxPlayersInRoom")}
+              onCommit={commitNumber("maxPlayersInRoom")}
+              readOnly={readOnly}
+              type="number"
               width={"45%"}
               required={true}
             />
             <DefaultInput
               label="Max imposters in room"
-              value={`${currentPlayer.currentRoom?.settings.maxImpostersInRoom}`}
+              value={`${draft.maxImpostersInRoom}`}
+              setValue={onDraftField("maxImpostersInRoom")}
+              onCommit={commitNumber("maxImpostersInRoom")}
+              readOnly={readOnly}
+              type="number"
               width={"45%"}
               required={true}
             />
             <DefaultInput
               label="Drawing time for each player (in seconds)"
-              value={`${currentPlayer.currentRoom?.settings.drawingTime}`}
+              value={`${draft.drawingTime}`}
+              setValue={onDraftField("drawingTime")}
+              onCommit={commitNumber("drawingTime")}
+              readOnly={readOnly}
+              type="number"
               width={"45%"}
               required={true}
             />
             <DefaultInput
               label="Number of rounds with different imposters"
-              value={`${currentPlayer.currentRoom?.settings.drawingRoundsLimit}`}
+              value={`${draft.drawingRoundsLimit}`}
+              setValue={onDraftField("drawingRoundsLimit")}
+              onCommit={commitNumber("drawingRoundsLimit")}
+              readOnly={readOnly}
+              type="number"
               width={"45%"}
               required={true}
             />
             <SelectorInput
               label="Voting type"
-              value={`${currentPlayer.currentRoom?.settings.votingType}`}
-              options={["Once", "Continued"]}
+              value={`${draft.votingType}`}
+              options={["once", "continued"]}
+              onCommit={commitString("votingType")}
+              readOnly={readOnly}
               width={"45%"}
               required={true}
             />
             <SelectorInput
               label="Room type"
-              value={`${currentPlayer.currentRoom?.settings.roomType}`}
-              options={["Private", "Public"]}
+              value={`${draft.roomType}`}
+              options={["private", "public"]}
+              onCommit={commitString("roomType")}
+              readOnly={readOnly}
               width={"45%"}
               required={true}
             />
@@ -162,7 +226,6 @@ ${window.location.href}`;
               label="Leave Game"
               style={{ width: "95%" }}
               onClick={() => {
-                const roomId = currentPlayer?.currentRoom?.roomId;
                 if (roomId) server?.leaveRoom(roomId);
                 StoreGameRoom(null);
                 navigate("/");

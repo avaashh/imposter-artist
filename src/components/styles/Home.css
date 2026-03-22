@@ -167,6 +167,21 @@ body {
   text-align: right;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #4b2b82;
+  font-family: "Poppins";
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: underline;
+}
+.link-button:hover {
+  color: #2f1659;
+}
+
 /* Styles for mobile screens */
 @media (max-width: 500px) {
   .appLogo {

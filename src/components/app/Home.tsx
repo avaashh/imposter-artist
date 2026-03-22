@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Link } from "react-router-dom";
 
 import background from "../../assets/img/background.svg";
 import "../styles/Home.css";
@@ -79,7 +78,45 @@ const PromptPlayer = () => {
   );
 };
 
+const HowToPlayPopup: React.FC<{
+  isVisible: boolean;
+  setIsVisible: (v: boolean) => void;
+}> = ({ isVisible, setIsVisible }) => (
+  <Popup isVisible={isVisible} setIsVisible={setIsVisible}>
+    <h3 className="largeText centeredText">How to Play</h3>
+    <div style={{ maxWidth: 480 }}>
+      <ol className="midText" style={{ lineHeight: 1.5, paddingLeft: 18 }}>
+        <li>Create a room and share the invite with 2+ friends.</li>
+        <li>
+          Everyone gets a secret word — except one player, the
+          <strong> imposter</strong>, who only knows it's their turn to blend
+          in.
+        </li>
+        <li>
+          Take turns adding <strong>one stroke each</strong> to the same
+          drawing.
+        </li>
+        <li>
+          After every round, vote on who you think is the imposter. Tie votes
+          mean the imposter escapes.
+        </li>
+        <li>
+          Catch the imposter and the artists split a point. The imposter gets
+          two for a successful sneak.
+        </li>
+      </ol>
+      <p
+        className="midText"
+        style={{ textAlign: "center", marginTop: 16, opacity: 0.7 }}
+      >
+        Trust no one. Draw carefully.
+      </p>
+    </div>
+  </Popup>
+);
+
 const HomeScreen = () => {
+  const [howToVisible, setHowToVisible] = React.useState(false);
   return (
     <div
       className="appBackground"
@@ -100,10 +137,27 @@ const HomeScreen = () => {
 
       <section className="centered-component">
         <div className="bottom-container">
-          <Link to="/play/MEM">How to Play</Link>
-          <Link to="/lobby/MEM">Privacy Policy</Link>
+          <button
+            className="link-button"
+            onClick={() => setHowToVisible(true)}
+          >
+            How to Play
+          </button>
+          <a
+            className="link-button"
+            href="https://github.com/avaashh/imposter-artist"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Source on GitHub
+          </a>
         </div>
       </section>
+
+      <HowToPlayPopup
+        isVisible={howToVisible}
+        setIsVisible={setHowToVisible}
+      />
     </div>
   );
 };
