@@ -1,78 +1,95 @@
-## Imposter Artist
+# Imposter Artist
 
-Imposter Artist is a web application that brings the popular party game, Imposter Artist, to the digital realm. Enjoy hours of creative deception and deduction with your friends from anywhere, anytime.
+A real-time multiplayer party game where everyone contributes one stroke to
+the same doodle — except one player, the **imposter**, who doesn't know the
+word and has to blend in. After a few rounds, everyone votes on who they
+think the imposter is.
 
-### Features
+React + Redux on the client, Go + Gorilla WebSocket on the server.
 
-- **Real-time Collaboration:** Collaborate with other players on a shared drawing canvas in real-time.
-- **Role Assignments:** Players are assigned roles as artists or imposters.
-- **Customizable Rooms:** Create or join rooms with customizable settings such as maximum players and imposters, language, drawing time, and rounds.
-- **Lobby Functionality:** Invite friends and manage room settings from the lobby.
-- **Random Word/Phrase Generation:** Non-imposter players receive random words or phrases for drawing.
-- **Frontend State Management:** Use Redux for frontend state management, including persistence of player names and characters.
-- **Backend Server in Go:** The backend server is implemented in Go, utilizing Gorilla WebSockets for real-time communication.
-- **Database Integration:** Connect to a database for word or phrase retrieval.
+## Running locally
 
-### Getting Started
+You'll need:
 
-To get started with Imposter Artist, follow these steps:
+- Node 18+ and `yarn` (or `npm`)
+- Go 1.20+
 
-1. Clone the repository:
+```bash
+# 1. install frontend deps and start the dev server
+yarn install
+yarn start
 
-`git clone https://github.com/avaashh/imposter-artist.git`
+# 2. in a separate shell, start the Go backend
+cd server
+go run main.go
+```
 
-2. Navigate to the project directory:
+The frontend is served at <http://localhost:3000> and talks to the backend
+at <ws://localhost:8000/ws>. The dev server auto-detects this; set
+`REACT_APP_WS_URL` if you need to point at a different backend.
 
-`cd imposter-artist`
+## Configuration
 
-3. Install dependencies for the frontend:
+The server reads a couple of environment variables. See `.env.example`.
 
-`yarn install`
+| Variable          | Default                                                | Purpose                                                                                |
+| ----------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `ALLOWED_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000`          | Comma-separated list of allowed WebSocket origins. Set to `*` to fully open the upgrader. |
+| `REACT_APP_WS_URL` | Inferred from `window.location`                        | Override the WebSocket URL the frontend connects to.                                   |
 
-4. Run the frontend application:
+`/healthz` on the backend returns `200 ok` and is handy as a readiness
+probe.
 
-`yarn start`
+## Deploying
 
-5. Navigate to the `server` directory:
+Two deployable units:
 
-`cd server`
+1. **Frontend** — the output of `yarn build` is a static bundle you can drop
+   on any static host (Netlify, Cloudflare Pages, S3 + CloudFront, …).
+   At build time, set `REACT_APP_WS_URL` so the bundle knows where the
+   backend lives in production.
+2. **Backend** — `go build ./server` produces a single binary that listens
+   on port `8000` (hardcoded in `server/types/exports.go`). Run it behind
+   any reverse proxy that can forward WebSocket upgrades. Remember to set
+   `ALLOWED_ORIGINS` to your frontend's domain.
 
-6. Install dependencies for the backend:
+## Game rules
 
-`go get ./...`
+- 3+ players per room. One secret word is picked. One random player becomes
+  the imposter; the rest see the word.
+- Players take turns drawing, contributing **one stroke per turn**. The
+  drawer can end their turn early, otherwise the server auto-advances when
+  the drawing timer expires.
+- After N rounds (configurable), everyone votes for who they think is
+  the imposter. Tied votes count as an escape — the artists didn't agree.
+- Catching the imposter awards each artist 1 point; a successful sneak
+  awards the imposter 2. Scores accumulate across games in the same lobby.
 
-7. Start the backend server:
+## Repository layout
 
-`go run main.go`
+```
+src/                  # React frontend
+  components/         # UI
+  assets/dist/        # WebSocket client + message router
+  utils/storage/      # Redux store, persistence, action helpers
+  types/              # Shared TS types
+server/               # Go backend
+  dist/               # HTTP + WebSocket entrypoints
+  game/               # Room state machine, phases, voting, etc.
+  types/              # Wire types (mirror of src/types where it counts)
+  web/                # Action name constants
+  main.go             # Calls dist.AppServer
+public/               # CRA static assets
+```
 
-8. Access the application in your web browser at `http://localhost:3000`.
+## Contributing
 
-### Objectives:
+Bug reports and PRs welcome. Keep things roughly in the existing coding
+style. If you add a backend action, also wire its handler in
+`server/dist/handlers.go`, register the action name in
+`server/web/socketActions.go`, and add a case to the client router in
+`src/assets/dist/contact.ts`.
 
-1.  (Frontend: ✅, Backend: ✅) Create Rooms
-2.  (Frontend: ✅, Backend: ✅) Join Rooms with code
-3.  (Frontend: ➖, Backend: ➖) Join random open rooms
-4.  (Frontend: ✅, Backend: ✅) Players join game room
-5.  (Frontend: ➖, Backend: ✅) Room owner priviledges to change room settings
-6.  (Frontend: ➖, Backend: ➖) Kick/ban users from room
-7.  (Frontend: ✅, Backend: ✅) Randomize colors each game for players
-8.  (Frontend: ➖, Backend: ✅) Randomize an imposter each round from players
-9.  (Frontend: ✅, Backend: ✅) Send strokes to all players except the creator of stroke
-10. (Frontend: ➖, Backend: ➖) Fetch a random word from database for each round
-11. (Frontend: ✅, Backend: ➖) Create a turn system for drawing
-12. (Frontend: ➖, Backend: ➖) Add a voting system
-13. (Frontend: ✅, Backend: ➖) Efficient and reliable storage
+## License
 
-### Contributing
-
-Contributions are welcome! If you find a bug, have suggestions for improvements, or would like to add new features, please open an issue or submit a pull request.
-
-When contributing, please follow the existing coding style and adhere to the project's license.
-
-### License
-
-This project is licensed under the [GPL-3.0 license](https://github.com/avaashh/imposter-artist/blob/main/LICENSE).
-
-### Bootstrapping
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and [Golang Init](https://go.dev/doc/modules/managing-dependencies#naming_module)
+[GPL-3.0](./LICENSE).

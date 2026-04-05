@@ -1,6 +1,7 @@
 {
-  "short_name": "The Imposter Artist",
+  "short_name": "Imposter Artist",
   "name": "Imposter Artist",
+  "description": "A real-time multiplayer drawing game. One player doesn't know the word.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,6 +11,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#4b2b82",
+  "background_color": "#ece4f9"
 }
