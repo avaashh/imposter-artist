@@ -9,10 +9,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// send writes a JSON envelope to a single connection. Errors are logged; we
-// don't fail callers because the dropped-peer case is handled by the
-// disconnect path.
-func send(conn *websocket.Conn, envelope types.Response) {
+// writer is the package-level hook that actually pushes a JSON envelope
+// down a socket. Tests swap it out with a no-op so they can exercise the
+// state machine without needing real websockets.
+var writer = defaultWriter
+
+func defaultWriter(conn *websocket.Conn, envelope types.Response) {
 	if conn == nil {
 		return
 	}
@@ -24,6 +26,13 @@ func send(conn *websocket.Conn, envelope types.Response) {
 	if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
 		log.Println("broadcast write:", err)
 	}
+}
+
+// send writes a JSON envelope to a single connection. Errors are logged; we
+// don't fail callers because the dropped-peer case is handled by the
+// disconnect path.
+func send(conn *websocket.Conn, envelope types.Response) {
+	writer(conn, envelope)
 }
 
 // sendTo dispatches the same envelope to a list of connections.
