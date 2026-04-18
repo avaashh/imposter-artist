@@ -8,12 +8,10 @@ body {
 /* Styles for desktop screens */
 .appBackground {
   width: 100%;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  min-height: 100vh;
   background-color: #ece4f9;
+  padding: 1px 0 24px; /* 1px top blocks margin-collapse from child headers */
+  box-sizing: border-box;
 }
 
 .headerComponent {
@@ -71,11 +69,14 @@ body {
   background-color: #d0b9f5c0;
   border-radius: 5px;
   width: 400px;
-  height: 400px;
+  min-height: 400px;
+  padding: 20px 16px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  gap: 12px;
 }
 
 .characterContainer {
@@ -127,6 +128,7 @@ body {
   justify-content: space-evenly;
   align-items: flex-start;
   width: 400px;
+  margin-top: 20px;
 }
 
 .largeText {

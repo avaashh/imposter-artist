@@ -83,9 +83,7 @@ const GameRoomSettingsHolder = ({
     if (serverSettings) setDraft(serverSettings);
   }, [serverSettingsKey]);
 
-  const fullInvite = `Hey hey,
-Let's play a game of Imposter Artist online! Click on the link to join my room:
-${window.location.href}`;
+  const fullInvite = window.location.href
 
   const copyInviteCode = (justCode: boolean = false) => {
     navigator.clipboard
