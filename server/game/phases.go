@@ -1,6 +1,8 @@
 package game
 
 import (
+	"log"
+
 	"imposterArtist/types"
 
 	"github.com/gorilla/websocket"
@@ -66,7 +68,13 @@ func (m *Manager) StartGame(requester *websocket.Conn) error {
 		"playerColors":     append([]string(nil), r.Colors...),
 	}
 	conns := append([]*websocket.Conn(nil), r.Conns...)
+	firstDrawer := r.Players[r.TurnIndex].Id
+	playerCount := len(r.Players)
+	rounds := r.Settings.DrawingRoundsLimit
 	r.mu.Unlock()
+
+	log.Printf("[game] started roomId=%s players=%d rounds=%d firstDrawer=%s",
+		snap.RoomId, playerCount, rounds, firstDrawer)
 
 	// Private role DMs first…
 	for _, t := range roleTargets {

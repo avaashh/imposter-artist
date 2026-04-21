@@ -76,18 +76,23 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	// Upgrade HTTP connection to a WebSocket connection
 	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("Failed to upgrade connection:", err)
+		log.Printf("[ws] upgrade failed remote=%s err=%v", r.RemoteAddr, err)
 		return
 	}
+	log.Printf("[ws] connected conn=%p remote=%s origin=%q", conn, r.RemoteAddr, r.Header.Get("Origin"))
 
 	defer conn.Close()
-	defer handleDisconnect(conn)
+	defer func() {
+		log.Printf("[ws] disconnected conn=%p", conn)
+		handleDisconnect(conn)
+	}()
 
 	for {
 		// Read message from the client
 		messageType, msg, err := conn.ReadMessage()
 		if err != nil {
 			// this means player has disconnected
+			log.Printf("[ws] read ended conn=%p err=%v", conn, err)
 			break
 		}
 
@@ -95,8 +100,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		var receivedQuery types.Request
 		err = json.Unmarshal(msg, &receivedQuery)
 		if err != nil {
-			// Failed to unmarshal JSON
-			log.Println("Failed to unmarshal JSON:", err)
+			log.Printf("[ws] unmarshal failed conn=%p err=%v", conn, err)
 			continue
 		}
 
@@ -105,16 +109,14 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		// Convert the map to JSON format
 		responseJSON, err := json.Marshal(responseToReturn)
 		if err != nil {
-			// Failed to marshal JSON
-			log.Println("Failed to marshal JSON:", err)
+			log.Printf("[ws] marshal response failed conn=%p action=%s err=%v", conn, receivedQuery.Type, err)
 			continue
 		}
 
 		// Write the JSON response back to the client
 		err = conn.WriteMessage(websocket.TextMessage, responseJSON)
 		if err != nil {
-			// Failed to write message
-			log.Println("Failed to write message:", err)
+			log.Printf("[ws] write failed conn=%p action=%s err=%v", conn, receivedQuery.Type, err)
 			break
 		}
 	}

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"sync"
 
 	"imposterArtist/types"
@@ -47,6 +48,7 @@ func (m *Manager) CreateRoom(owner types.Player, settings types.GameRoomSettings
 	r.Conns = []*websocket.Conn{conn}
 	m.rooms[roomId] = r
 	m.index[conn] = connAssoc{roomId: roomId, playerId: owner.Id}
+	log.Printf("[room] created roomId=%s owner=%s conn=%p", roomId, owner.Id, conn)
 	return r, nil
 }
 
@@ -79,6 +81,7 @@ func (m *Manager) JoinRoom(roomId string, p types.Player, conn *websocket.Conn) 
 			m.mu.Lock()
 			m.index[conn] = connAssoc{roomId: roomId, playerId: p.Id}
 			m.mu.Unlock()
+			log.Printf("[room] reconnect roomId=%s player=%s conn=%p", roomId, p.Id, conn)
 			return r, nil
 		}
 	}
@@ -88,6 +91,7 @@ func (m *Manager) JoinRoom(roomId string, p types.Player, conn *websocket.Conn) 
 	m.mu.Lock()
 	m.index[conn] = connAssoc{roomId: roomId, playerId: p.Id}
 	m.mu.Unlock()
+	log.Printf("[room] joined roomId=%s player=%s count=%d conn=%p", roomId, p.Id, len(r.Players), conn)
 	return r, nil
 }
 
@@ -117,6 +121,9 @@ func (m *Manager) GetRoom(roomId string) *Room {
 func (m *Manager) removeRoom(roomId string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if _, existed := m.rooms[roomId]; existed {
+		log.Printf("[room] closed roomId=%s", roomId)
+	}
 	delete(m.rooms, roomId)
 }
 

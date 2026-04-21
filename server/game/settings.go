@@ -1,6 +1,8 @@
 package game
 
 import (
+	"log"
+
 	"imposterArtist/types"
 
 	"github.com/gorilla/websocket"
@@ -29,6 +31,10 @@ func (m *Manager) UpdateSettings(conn *websocket.Conn, incoming types.GameRoomSe
 	roomId := r.RoomId
 	conns := r.connsLocked()
 	r.mu.Unlock()
+
+	log.Printf("[room] settings updated roomId=%s players=%d rounds=%d turnSecs=%d votingType=%s roomType=%s",
+		roomId, normalized.MaxPlayersInRoom, normalized.DrawingRoundsLimit,
+		normalized.DrawingTime, normalized.VotingType, normalized.RoomType)
 
 	sendTo(conns, types.Response{
 		Type: "gameSettingsUpdated",

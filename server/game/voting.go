@@ -1,6 +1,8 @@
 package game
 
 import (
+	"log"
+
 	"imposterArtist/types"
 
 	"github.com/gorilla/websocket"
@@ -42,13 +44,17 @@ func (m *Manager) SubmitVote(conn *websocket.Conn, targetId string) error {
 		return errInvalidVote
 	}
 	r.Votes[voterId] = targetId
+	log.Printf("[vote] cast roomId=%s voter=%s votes=%d/%d", r.RoomId, voterId, len(r.Votes), len(r.Players))
 
 	update := r.votingUpdateLocked()
 	conns := r.connsLocked()
 
 	if len(r.Votes) >= len(r.Players) {
 		result := r.finalizeGameLocked()
+		roomId := r.RoomId
+		imposterWon, _ := result["imposterWon"].(bool)
 		r.mu.Unlock()
+		log.Printf("[game] over roomId=%s imposterWon=%v", roomId, imposterWon)
 		sendTo(conns, types.Response{Type: "votingUpdate", Payload: update})
 		sendTo(conns, types.Response{Type: "gameOver", Payload: result})
 		return nil
@@ -168,7 +174,10 @@ func (m *Manager) PlayAgain(conn *websocket.Conn) error {
 
 	snap := r.snapshotLocked()
 	conns := r.connsLocked()
+	roomId := r.RoomId
 	r.mu.Unlock()
+
+	log.Printf("[game] play again roomId=%s", roomId)
 
 	sendTo(conns, types.Response{
 		Type: "roomReset",

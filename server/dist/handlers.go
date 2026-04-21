@@ -22,7 +22,7 @@ func AppServer() {
 		_, _ = w.Write([]byte("ok"))
 	})
 	http.HandleFunc("/ws", handleWebSocket)
-	fmt.Println("Webserver started on port", types.ServerPort)
+	log.Printf("[srv] listening port=%s origins=%v", types.ServerPort, allowedOrigins)
 
 	if err := http.ListenAndServe(":"+types.ServerPort, nil); err != nil {
 		log.Fatal(err)
@@ -30,8 +30,10 @@ func AppServer() {
 }
 
 // errResponse builds the canonical shape for failure payloads so the client
-// can display a toast without having to guess fields.
+// can display a toast without having to guess fields. Centralising this also
+// gives us one chokepoint where every user-visible error is logged.
 func errResponse(req types.Request, err error) types.Response {
+	log.Printf("[req] err action=%s id=%s err=%v", req.Type, req.ID, err)
 	return types.Response{
 		ID:   req.ID,
 		Type: req.Type,
@@ -55,6 +57,7 @@ func okResponse(req types.Request, payload map[string]interface{}) types.Respons
 }
 
 func handleIncomingRequest(req types.Request, conn *websocket.Conn, messageType int) types.Response {
+	log.Printf("[req] in action=%s id=%s conn=%p", req.Type, req.ID, conn)
 	payload, ok := req.Payload.(map[string]interface{})
 	if !ok && req.Type != web.ActionCreateGame {
 		return errResponse(req, errors.New("could not understand payload"))

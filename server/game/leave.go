@@ -1,6 +1,8 @@
 package game
 
 import (
+	"log"
+
 	"imposterArtist/types"
 
 	"github.com/gorilla/websocket"
@@ -27,8 +29,11 @@ func (m *Manager) LeavePlayerByConn(conn *websocket.Conn) {
 
 	wasOwner := r.Players[idx].Id == r.Owner.Id
 	wasDrawer := r.Phase == PhaseInProgress && idx == r.TurnIndex
+	prevPhase := r.Phase
 
 	r.removePlayerAtLocked(idx)
+	log.Printf("[room] player left roomId=%s player=%s phase=%s remaining=%d",
+		r.RoomId, playerId, prevPhase, len(r.Players))
 
 	// Empty room? Tear it down entirely.
 	if len(r.Players) == 0 {
@@ -45,6 +50,7 @@ func (m *Manager) LeavePlayerByConn(conn *websocket.Conn) {
 		r.Owner = r.Players[0]
 		newOwnerCopy := r.Owner
 		newOwner = &newOwnerCopy
+		log.Printf("[room] ownership transferred roomId=%s newOwner=%s", r.RoomId, newOwnerCopy.Id)
 	}
 
 	// Phase-specific follow-up (new turn, voting, or game-over).
@@ -163,6 +169,7 @@ func (r *Room) removePlayerAtLocked(idx int) {
 // because too few players remain or (future) a host aborts. The imposter is
 // treated as having escaped; no points change hands.
 func (r *Room) finalizeByAbandonmentLocked() map[string]interface{} {
+	log.Printf("[game] abandoned roomId=%s remaining=%d", r.RoomId, len(r.Players))
 	r.stopTurnTimerLocked()
 	r.Phase = PhaseEnded
 

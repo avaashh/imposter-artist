@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"time"
 
 	"imposterArtist/types"
@@ -48,6 +49,7 @@ func (r *Room) handleTurnTimeout(expectedRound, expectedTurn int) {
 		r.mu.Unlock()
 		return
 	}
+	log.Printf("[turn] timeout roomId=%s round=%d turnIdx=%d", r.RoomId, expectedRound, expectedTurn)
 	r.turnTimer = nil
 	transition := r.advanceTurnLocked()
 	r.mu.Unlock()
@@ -67,6 +69,7 @@ func (r *Room) advanceTurnLocked() turnTransition {
 	if r.Round > r.Settings.DrawingRoundsLimit {
 		r.Phase = PhaseVoting
 		r.Votes = map[string]string{}
+		log.Printf("[phase] voting started roomId=%s players=%d", r.RoomId, len(r.Players))
 		return turnTransition{
 			kind:  "votingStarted",
 			conns: r.connsLocked(),
@@ -78,6 +81,8 @@ func (r *Room) advanceTurnLocked() turnTransition {
 	}
 
 	r.startTurnTimerLocked()
+	log.Printf("[turn] advance roomId=%s round=%d/%d turnIdx=%d drawer=%s",
+		r.RoomId, r.Round, r.Settings.DrawingRoundsLimit, r.TurnIndex, r.Players[r.TurnIndex].Id)
 	return turnTransition{
 		kind:  "turnStart",
 		conns: r.connsLocked(),

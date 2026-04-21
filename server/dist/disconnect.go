@@ -1,6 +1,8 @@
 package dist
 
 import (
+	"log"
+
 	"imposterArtist/game"
 
 	"github.com/gorilla/websocket"
@@ -14,5 +16,6 @@ func handleDisconnect(conn *websocket.Conn) {
 	if conn == nil {
 		return
 	}
+	log.Printf("[ws] cleanup conn=%p", conn)
 	game.Default.LeavePlayerByConn(conn)
 }
