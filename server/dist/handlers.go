@@ -72,6 +72,8 @@ func handleIncomingRequest(req types.Request, conn *websocket.Conn, messageType 
 		return handleStart(req, conn)
 	case web.ActionSendStroke:
 		return handleStroke(req, payload, conn, messageType)
+	case web.ActionStrokeProgress:
+		return handleStrokeProgress(req, payload, conn)
 	case web.ActionLeaveGame:
 		return handleLeave(req, conn)
 	case web.ActionEndTurn:
@@ -171,6 +173,23 @@ func handleStroke(req types.Request, payload map[string]interface{}, conn *webso
 	}
 
 	if err := game.Default.AcceptStroke(conn, stroke); err != nil {
+		return errResponse(req, err)
+	}
+	return okResponse(req, nil)
+}
+
+func handleStrokeProgress(req types.Request, payload map[string]interface{}, conn *websocket.Conn) types.Response {
+	pointsData, ok := payload["points"].([]interface{})
+	if !ok {
+		return errResponse(req, errors.New("could not understand stroke progress"))
+	}
+	points, err := parseStroke(pointsData)
+	if err != nil {
+		return errResponse(req, err)
+	}
+	isStart, _ := payload["isStart"].(bool)
+
+	if err := game.Default.AcceptStrokeProgress(conn, points, isStart); err != nil {
 		return errResponse(req, err)
 	}
 	return okResponse(req, nil)

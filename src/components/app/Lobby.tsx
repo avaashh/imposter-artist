@@ -72,7 +72,7 @@ const GameRoomSettingsHolder = ({
   const readOnly = !isOwner;
   const serverSettings = room?.settings;
   const roomId = room?.roomId || "";
-  const enoughPlayers = (room?.playersInRoom.length ?? 0) >= 3;
+  const enoughPlayers = (room?.playersInRoom.length ?? 0) >= 2;
 
   const [draft, setDraft] = React.useState<GameRoomSettings | undefined>(
     serverSettings
@@ -158,7 +158,7 @@ const GameRoomSettingsHolder = ({
               className="midText"
               style={{ textAlign: "center", margin: "8px 0" }}
             >
-              Waiting for at least 3 players…
+              Waiting for at least 2 players…
             </p>
           )}
           <div className="row-align">

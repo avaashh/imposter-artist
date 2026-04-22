@@ -18,42 +18,18 @@ type turnTransition struct {
 	payload map[string]interface{}
 }
 
-// startTurnTimerLocked kicks off a time.AfterFunc that will end the current
-// turn automatically if the drawer doesn't end it first. The captured
-// (round, turnIndex) lets the callback detect stale fires — e.g. when the
-// turn was already ended by endTurn or a disconnect.
+// startTurnTimerLocked records when the current turn began. The countdown
+// auto-advance was removed: turns now end only when the drawer hits "End my
+// turn" or when a disconnect forces recovery. We keep the timestamp so we
+// can still log turn durations if we ever want to.
 func (r *Room) startTurnTimerLocked() {
 	r.TurnStartedAt = time.Now()
-	round := r.Round
-	turnIndex := r.TurnIndex
-	duration := time.Duration(r.Settings.DrawingTime) * time.Second
-	r.turnTimer = time.AfterFunc(duration, func() {
-		r.handleTurnTimeout(round, turnIndex)
-	})
 }
 
-// stopTurnTimerLocked cancels any pending auto-advance timer.
+// stopTurnTimerLocked is kept as a stub so the leave/endTurn paths can still
+// call it without a special case. No timer means nothing to cancel.
 func (r *Room) stopTurnTimerLocked() {
-	if r.turnTimer != nil {
-		r.turnTimer.Stop()
-		r.turnTimer = nil
-	}
-}
-
-// handleTurnTimeout runs on the timer goroutine when a turn's duration
-// elapses. It re-acquires the room lock, guards against stale fires, then
-// advances the turn and broadcasts the transition.
-func (r *Room) handleTurnTimeout(expectedRound, expectedTurn int) {
-	r.mu.Lock()
-	if r.Phase != PhaseInProgress || r.Round != expectedRound || r.TurnIndex != expectedTurn {
-		r.mu.Unlock()
-		return
-	}
-	log.Printf("[turn] timeout roomId=%s round=%d turnIdx=%d", r.RoomId, expectedRound, expectedTurn)
 	r.turnTimer = nil
-	transition := r.advanceTurnLocked()
-	r.mu.Unlock()
-	broadcastTransition(transition)
 }
 
 // advanceTurnLocked moves the room forward one turn. When the final player
@@ -148,10 +124,11 @@ func (m *Manager) EndTurnByConn(conn *websocket.Conn) error {
 	return nil
 }
 
-// AcceptStroke authorizes a stroke, relays it to every other player, and —
-// because one stroke per turn is the Imposter Artist rule — auto-advances
-// the turn. Only the current drawer may submit strokes; everyone else is
-// rejected so a client bug or malicious peer can't paint on their behalf.
+// AcceptStroke authorizes a stroke and relays it to every other player in
+// the room. The drawer controls when their turn ends (via EndTurnByConn) —
+// we do not auto-advance here, so a single turn can contain many strokes.
+// Only the current drawer may submit strokes; everyone else is rejected so
+// a client bug or malicious peer can't paint on their behalf.
 func (m *Manager) AcceptStroke(conn *websocket.Conn, stroke types.Stroke) error {
 	r, _ := m.FindByConn(conn)
 	if r == nil {
@@ -181,9 +158,6 @@ func (m *Manager) AcceptStroke(conn *websocket.Conn, stroke types.Stroke) error 
 			others = append(others, c)
 		}
 	}
-
-	r.stopTurnTimerLocked()
-	transition := r.advanceTurnLocked()
 	r.mu.Unlock()
 
 	sendTo(others, types.Response{
@@ -195,6 +169,55 @@ func (m *Manager) AcceptStroke(conn *websocket.Conn, stroke types.Stroke) error 
 			"playerId":   drawerId,
 		},
 	})
-	broadcastTransition(transition)
+	return nil
+}
+
+// AcceptStrokeProgress relays an in-progress stroke delta from the current
+// drawer to every other player so viewers can watch the stroke render live.
+// The payload carries only the points added since the last progress send,
+// plus an isStart flag marking the first delta of a fresh stroke. Nothing is
+// persisted — the completed stroke still arrives via AcceptStroke on mouse
+// up, and that is what commits to everyone's stroke list.
+func (m *Manager) AcceptStrokeProgress(conn *websocket.Conn, points types.Stroke, isStart bool) error {
+	r, _ := m.FindByConn(conn)
+	if r == nil {
+		return errNotInRoom
+	}
+
+	r.mu.Lock()
+	if r.Phase != PhaseInProgress {
+		r.mu.Unlock()
+		return errWrongPhase
+	}
+	idx := r.playerIndexByConn(conn)
+	if idx < 0 {
+		r.mu.Unlock()
+		return errNotInRoom
+	}
+	if idx != r.TurnIndex {
+		r.mu.Unlock()
+		return errNotYourTurn
+	}
+
+	drawerId := r.Players[idx].Id
+	roomId := r.RoomId
+	others := make([]*websocket.Conn, 0, len(r.Conns))
+	for _, c := range r.Conns {
+		if c != nil && c != conn {
+			others = append(others, c)
+		}
+	}
+	r.mu.Unlock()
+
+	sendTo(others, types.Response{
+		Type: "strokeProgress",
+		Payload: map[string]interface{}{
+			"success":  true,
+			"roomId":   roomId,
+			"points":   points,
+			"isStart":  isStart,
+			"playerId": drawerId,
+		},
+	})
 	return nil
 }

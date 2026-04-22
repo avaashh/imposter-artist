@@ -96,6 +96,13 @@ export default class Server {
       roomId: user.currentRoom?.roomId,
     });
 
+  postStrokeProgressToServer = (user: Player, points: Stroke, isStart: boolean) =>
+    this.send("strokeProgress", {
+      points,
+      isStart,
+      roomId: user.currentRoom?.roomId,
+    });
+
   joinRoomWithCode = (gameRoomId: string, player: Player) =>
     this.send("joinGameWithCode", { gameRoomId, player });
 

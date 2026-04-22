@@ -27,7 +27,7 @@ func (m *Manager) StartGame(requester *websocket.Conn) error {
 		r.mu.Unlock()
 		return errWrongPhase
 	}
-	if len(r.Players) < 3 {
+	if len(r.Players) < minPlayers {
 		r.mu.Unlock()
 		return errTooFewPlayers
 	}
@@ -92,9 +92,5 @@ func (m *Manager) StartGame(requester *websocket.Conn) error {
 	})
 	// …and a turnStart so the canvas knows whose turn it is.
 	sendTo(conns, types.Response{Type: "turnStart", Payload: turnPayload})
-
-	r.mu.Lock()
-	r.startTurnTimerLocked()
-	r.mu.Unlock()
 	return nil
 }

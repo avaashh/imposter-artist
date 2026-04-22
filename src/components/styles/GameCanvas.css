@@ -1,112 +1,240 @@
-.fixed-container {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  position: fixed;
-}
+/*
+ * Drawing phase — reuses the lavender app palette (#ece4f9 body bg,
+ * #d0b9f5c0 tinted containers, #4b2b82 accent) so it feels like the
+ * same app as Home / Lobby / Voting / GameOver. No gradients, no
+ * drop shadows, no pulse animations.
+ */
 
-.game-container {
+.draw-scene {
+  min-height: 100vh;
   display: flex;
-  height: 100%;
-  overflow: hidden;
-}
-
-.players-sidebar,
-.tools-sidebar {
-  display: flex;
-  flex: 1;
-  background-color: #f0f0f0;
-  padding: 10px;
-  box-sizing: border-box;
-  overflow: auto;
   flex-direction: column;
+  color: #000;
+  font-family: "Poppins", sans-serif;
+  padding: 10px 24px 22px;
+  box-sizing: border-box;
+  gap: 14px;
 }
 
-.tools-sidebar {
-  flex: 0.75;
-}
-
-.players-sidebar {
-  flex: 0.5;
-}
-
-.players {
+/* --- Header --- */
+.draw-header {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #c7b3e8;
 }
 
-.player {
-  width: 50px;
-  height: 50px;
-  margin: 5px;
-  background-color: #ccc;
+.draw-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
 }
 
-.game-canvas {
-  flex: 2;
-  background-color: #dddddd;
+.draw-meta {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 24px;
-  max-width: 100%;
-  max-height: 100vh;
-  touch-action: none;
-  padding: 10px;
-  gap: 8px;
-}
-
-.game-hud {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 2px;
-  width: 100%;
 }
 
-.hud-word {
-  font-family: "Poppins";
-  font-weight: 600;
-  font-size: 20px;
-  letter-spacing: 2px;
+.meta-round {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
+  color: #4b2b82;
 }
 
-.hud-turn {
-  font-family: "Poppins";
+.meta-drawer {
+  font-weight: 500;
+  font-size: 16px;
+  color: #000;
+}
+
+.draw-word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 14px;
+  border-radius: 5px;
+  background: #d0b9f5c0;
+  border: 1px solid #c7b3e8;
+}
+
+.word-label {
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #4b2b82;
+}
+
+.word-value {
+  font-weight: 600;
+  font-size: 16px;
+  color: #000;
+}
+
+.word-aside {
   font-weight: 400;
-  font-size: 13px;
-  opacity: 0.75;
+  font-size: 11px;
+  color: #4b2b82;
+  font-style: italic;
+  margin-left: 4px;
 }
 
-/* Media query for phones and tablets */
-@media (max-width: 767px), (min-width: 768px) and (max-width: 1024px) {
-  .game-container {
+/* --- Main body --- */
+.draw-main {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  min-height: 0;
+}
+
+.draw-players {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.chip-active {
+  background: #d0b9f5c0;
+  border-color: #c7b3e8;
+}
+
+.chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chip-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.chip-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-you {
+  font-weight: 400;
+  color: #4b2b82;
+}
+
+.chip-crown {
+  margin-left: 4px;
+  color: #4b2b82;
+}
+
+.chip-role {
+  font-size: 11px;
+  color: #4b2b82;
+  opacity: 0.65;
+}
+
+.chip-active .chip-role {
+  opacity: 1;
+}
+
+/* --- Canvas --- */
+.canvas-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvas-card {
+  padding: 6px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #c7b3e8;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-overlay-hint {
+  font-size: 12px;
+  color: #4b2b82;
+  opacity: 0.7;
+}
+
+/* --- Footer --- */
+.draw-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+}
+
+.footer-hint {
+  font-size: 12px;
+  color: #4b2b82;
+  opacity: 0.65;
+}
+
+/* --- Mobile --- */
+@media (max-width: 820px) {
+  .draw-scene {
+    padding: 6px 14px 22px;
+    gap: 12px;
+  }
+
+  .draw-header {
+    align-items: stretch;
+  }
+
+  .draw-header-left {
+    gap: 10px;
+  }
+
+  .draw-main {
     flex-direction: column;
   }
 
-  .players-sidebar,
-  .tools-sidebar {
-    flex: 0 0 auto;
+  .draw-players {
+    width: 100%;
     flex-direction: row;
     overflow-x: auto;
-    padding: 8px;
+    overflow-y: hidden;
+    gap: 6px;
+    padding-bottom: 4px;
   }
 
-  .players-sidebar h2,
-  .tools-sidebar h2 {
-    display: none;
-  }
-
-  .game-canvas {
-    flex: 1 1 auto;
-  }
-
-  .hud-word {
-    font-size: 16px;
+  .chip {
+    flex-shrink: 0;
+    min-width: 160px;
   }
 }

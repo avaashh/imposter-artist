@@ -55,11 +55,11 @@ Two deployable units:
 
 ## Game rules
 
-- 3+ players per room. One secret word is picked. One random player becomes
+- 2+ players per room. One secret word is picked. One random player becomes
   the imposter; the rest see the word.
-- Players take turns drawing, contributing **one stroke per turn**. The
-  drawer can end their turn early, otherwise the server auto-advances when
-  the drawing timer expires.
+- Players take turns drawing on a **shared canvas**. During your turn you
+  add as many strokes as you like, then hit **End my turn** to pass the
+  pen to the next player.
 - After N rounds (configurable), everyone votes for who they think is
   the imposter. Tied votes count as an escape — the artists didn't agree.
 - Catching the imposter awards each artist 1 point; a successful sneak

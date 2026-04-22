@@ -86,19 +86,19 @@ const HowToPlayPopup: React.FC<{
     <h3 className="largeText centeredText">How to Play</h3>
     <div style={{ maxWidth: 480 }}>
       <ol className="midText" style={{ lineHeight: 1.5, paddingLeft: 18 }}>
-        <li>Create a room and share the invite with 2+ friends.</li>
+        <li>Create a room and share the invite with a friend (or more).</li>
         <li>
           Everyone gets a secret word — except one player, the
           <strong> imposter</strong>, who only knows it's their turn to blend
           in.
         </li>
         <li>
-          Take turns adding <strong>one stroke each</strong> to the same
-          drawing.
+          Take turns drawing on the <strong>same canvas</strong>. During
+          your turn, add a few strokes — then pass the pen.
         </li>
         <li>
-          After every round, vote on who you think is the imposter. Tie votes
-          mean the imposter escapes.
+          After the final round, vote on who you think is the imposter. Tie
+          votes mean the imposter escapes.
         </li>
         <li>
           Catch the imposter and the artists split a point. The imposter gets

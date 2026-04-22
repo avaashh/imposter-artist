@@ -30,6 +30,7 @@ const (
 	defaultRoundsLimit  = 2
 	defaultMaxPlayers   = 8
 	defaultMaxImposters = 1
+	minPlayers          = 2
 )
 
 // GameResult captures the outcome of a finished game so we can show a
@@ -261,6 +262,6 @@ var (
 	errWrongPhase     = errors.New("action not available in the current phase")
 	errInvalidVote    = errors.New("invalid vote")
 	errNotInRoom      = errors.New("you are not in this room")
-	errTooFewPlayers  = errors.New("need at least 3 players to start")
+	errTooFewPlayers  = errors.New("need at least 2 players to start")
 	errAlreadyVoted   = errors.New("you have already voted")
 )

@@ -60,7 +60,7 @@ func (m *Manager) LeavePlayerByConn(conn *websocket.Conn) {
 
 	switch r.Phase {
 	case PhaseInProgress:
-		if len(r.Players) < 3 {
+		if len(r.Players) < minPlayers {
 			finalizedPayload = r.finalizeByAbandonmentLocked()
 			break
 		}
@@ -101,7 +101,7 @@ func (m *Manager) LeavePlayerByConn(conn *websocket.Conn) {
 		}
 	case PhaseVoting:
 		delete(r.Votes, playerId)
-		if len(r.Players) < 3 {
+		if len(r.Players) < minPlayers {
 			finalizedPayload = r.finalizeByAbandonmentLocked()
 			break
 		}
